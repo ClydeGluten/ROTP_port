@@ -1,0 +1,22 @@
+{
+  "required": true,
+  "package": "com.github.standobyte.jojo.fabric.mixin.timestop",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "LevelMixin",
+    "ServerGamePacketListenerImplMixin",
+    "ServerLevelMixin",
+    "ServerPlayerMixin"
+  ],
+  "client": [
+    "ClientLevelMixin",
+    "ClientBlockEntityMixin",
+    "EntityRendererMixin",
+    "KeyboardInputMixin",
+    "MinecraftMixin",
+    "MouseHandlerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

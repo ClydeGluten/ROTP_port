@@ -22,6 +22,10 @@ build
 eclipse
 run
 mcmodsrepo
+__pycache__/
+*.pyc
+.codex/
+drafts/
 
 # Files from Forge MDK
 changelog.txt

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "jojo-gametest",
+  "version": "1.0.0",
+  "name": "Ripples Fabric integration tests",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "com.github.standobyte.jojo.fabric.StandGameTests",
+      "com.github.standobyte.jojo.fabric.AdvancedAbilityGameTests",
+      "com.github.standobyte.jojo.fabric.TimeStopGameTests",
+      "com.github.standobyte.jojo.fabric.MovementGameTests",
+      "com.github.standobyte.jojo.fabric.AcquisitionGameTests",
+      "com.github.standobyte.jojo.fabric.ProgressionGameTests"
+    ],
+    "fabric-client-gametest": [
+      "com.github.standobyte.jojo.fabric.StandClientGameTest",
+      "com.github.standobyte.jojo.fabric.AcquisitionClientGameTest",
+      "com.github.standobyte.jojo.fabric.ProgressionClientGameTest",
+      "com.github.standobyte.jojo.fabric.CameraClientGameTest"
+    ]
+  }
+}

@@ -1,0 +1,144 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
+}
+
+version = project.mod_version
+group = 'com.github.standobyte.jojo'
+
+base { archivesName = 'RipplesOfThePast-Fabric' }
+evaluationDependsOn(':core')
+
+repositories { mavenCentral() }
+
+loom {
+    splitEnvironmentSourceSets()
+    mods {
+        jojo {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+            sourceSet project(':core').sourceSets.main
+        }
+    }
+}
+
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'jojo-gametest'
+        enableGameTests = true
+        enableClientGameTests = true
+        // Explicit opt-in: accepting terms must remain a local choice, not a repository default.
+        eula = providers.gradleProperty('acceptMinecraftEula').map { it.toBoolean() }.getOrElse(false)
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+    implementation project(':core')
+    include project(':core')
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(25)
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach { options.release = 25 }
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand version: project.version }
+    // Keep original assets as the source of truth. Legacy data packs and mixins are not compatible.
+    from('../src/main/resources') {
+        include 'logo.png'
+        include 'assets/jojo/textures/**'
+        include 'assets/jojo/sounds/**'
+        include 'assets/jojo/sounds.json'
+        include 'assets/jojo/lang/**'
+    }
+    doLast {
+        def languageFile = new File(destinationDir, 'assets/jojo/lang/en_us.json')
+        def translations = new groovy.json.JsonSlurper().parse(languageFile)
+        translations.putAll([
+            'jojo.fabric.progress.title': 'Stand Progression',
+            'jojo.fabric.progress.close': 'Close',
+            'jojo.fabric.progress.no_stand': 'Obtain Star Platinum to begin progression.',
+            'jojo.fabric.progress.creative_notice': 'Creative mode: all moves and full 5-second Time Stop are available. Earned progress is shown below.',
+            'jojo.fabric.progress.level': 'Resolve Level %s',
+            'jojo.fabric.progress.resolve': 'Resolve: %s / %s',
+            'jojo.fabric.progress.burst': 'Resolve Burst! %s s left',
+            'jojo.fabric.progress.gain_title': 'Gaining Resolve',
+            'jojo.fabric.progress.gain_attacks': 'Land Stand attacks on hostile mobs and players.',
+            'jojo.fabric.progress.gain_boost': 'Low health and sustained combat boost your gains.',
+            'jojo.fabric.progress.decay': 'Resolve decays after 20 s without combat while summoned, or 10 s while dismissed.',
+            'jojo.fabric.progress.moves_title': 'Moves',
+            'jojo.fabric.progress.move_line': '%s - %s',
+            'jojo.fabric.progress.unlocked': 'Unlocked',
+            'jojo.fabric.progress.requires_level': 'Requires level %s',
+            'jojo.fabric.progress.creative_access': 'Creative access (level %s)',
+            'jojo.fabric.progress.move.punch': 'Punch [%s]',
+            'jojo.fabric.progress.move.heavy': 'Heavy Punch [%s]',
+            'jojo.fabric.progress.move.barrage': 'Barrage [%s]',
+            'jojo.fabric.progress.move.guard': 'Guard [%s]',
+            'jojo.fabric.progress.move.zoom': 'Zoom [%s]',
+            'jojo.fabric.progress.move.manual': 'Manual Control [%s]',
+            'jojo.fabric.progress.move.uppercut': 'Uppercut [%s]',
+            'jojo.fabric.progress.move.inhale': 'Inhale [%s]',
+            'jojo.fabric.progress.move.finger': 'Star Finger [%s]',
+            'jojo.fabric.progress.move.time_stop': 'Time Stop [%s]',
+            'jojo.fabric.progress.time_title': 'Time Stop Training',
+            'jojo.fabric.progress.time_duration': 'Duration: %s s of %s s',
+            'jojo.fabric.progress.time_points': 'Training: %s / %s points',
+            'jojo.fabric.progress.time_training': 'Training grows 0.25 points per tick of actually stopped time, 4x during a Resolve Burst, up to a 5-second maximum.',
+            'jojo.fabric.progress.narration': 'Stand progression. Resolve level %s. Resolve %s of %s. Time Stop lasts %s seconds, training %s of 95 points.',
+            'jojo.fabric.progress.narration.creative': 'Stand progression, Creative mode. Earned Resolve level %s. Resolve %s of %s. Earned Time Stop lasts %s seconds, training %s of 95 points.',
+            'jojo.fabric.progress.narration.none': 'Stand progression. No Stand yet.',
+            'key.jojo.fabric.progress': 'Stand progression',
+            'jojo.fabric.progress.hud': 'Resolve %s: %s / %s',
+            'jojo.fabric.progress.hint': '%s Stand progression',
+            'jojo.fabric.progress.locked_action': '%s requires Resolve level %s. Open Stand progression for details.',
+            'jojo.fabric.progress.level_up': 'Resolve level %s reached! Press %s to view your unlocked moves.',
+            'jojo.fabric.progress.time_creative': 'Creative access: full 5-second Time Stop.',
+            'key.category.jojo.powers': 'Ripples of the Past',
+            'key.jojo.fabric.summon': 'Summon / dismiss Stand',
+            'key.jojo.fabric.light': 'Stand light punch',
+            'key.jojo.fabric.heavy': 'Stand heavy punch',
+            'key.jojo.fabric.barrage': 'Stand barrage (hold)',
+            'key.jojo.fabric.guard': 'Stand guard (hold)',
+                        'key.jojo.fabric.time_stop': 'Stop / resume time',
+            'jojo.fabric.time_controls': '%s Stop / resume time',
+            'jojo.fabric.time_unavailable': 'Time stop needs an idle Stand and 225 stamina. Cooldown: %s s',
+            'jojo.fabric.time_active': 'Time stopped: %s s',
+            'key.jojo.fabric.uppercut': 'Stand uppercut',
+            'key.jojo.fabric.finger': 'Star Finger',
+            'key.jojo.fabric.inhale': 'Star Platinum inhale (hold)',
+            'key.jojo.fabric.zoom': 'Star Platinum zoom (hold)',
+            'key.jojo.fabric.control': 'Manual Stand control (hold; move with movement keys)',
+            'jojo.fabric.advanced_controls': '%s Uppercut  %s Star Finger  Hold %s Inhale',
+            'jojo.fabric.view_controls': 'Hold %s Zoom  %s Manual control',
+            'jojo.fabric.stamina': 'Stamina: %s / %s',
+            'jojo.fabric.arrow.use': 'Use to pierce yourself and awaken a Stand.',
+            'jojo.fabric.arrow.cost': 'XP cost: 30 levels, +5 per previous Arrow awakening.',
+            'jojo.fabric.arrow.danger': 'Without enough XP, the virus can kill you. Milk cannot cure it.',
+            'jojo.fabric.arrow.pool': 'Available Stand: Star Platinum.',
+            'jojo.fabric.arrow.infected': 'The Stand Virus is already active.',
+            'jojo.fabric.arrow.started': 'Stand Virus: %s XP levels needed. Survive to awaken Star Platinum.',
+            'jojo.fabric.arrow.awakened': 'Star Platinum awakened! Summon: %s.',
+            'jojo.fabric.arrow.progress': 'Stand Virus: %s / %s XP levels paid',
+            'jojo.fabric.arrow.remaining': 'Virus expires in %s s. Keep your health and XP up.',
+            'jojo.fabric.arrow.requirement': 'Stand Arrow cost: %s XP levels',
+            'jojo.fabric.arrow.creative': 'Stand Arrow: instant awakening in Creative',
+            'jojo.fabric.stamina_unlimited': 'Stamina: Unlimited (Creative)',
+            'jojo.fabric.finisher': 'Finisher: %s%%',
+            'jojo.fabric.finisher_ready': 'Finisher ready: %s',
+            'jojo.fabric.guard_broken': 'Guard broken!',
+            'jojo.fabric.controls': '%s Summon  %s Punch  %s Heavy',
+            'jojo.fabric.held_controls': 'Hold %s Barrage  %s Guard'
+        ])
+        languageFile.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(translations))
+    }
+}
+
+jar { from('../LICENSE') { rename { 'LICENSE_RipplesOfThePast' } } }
