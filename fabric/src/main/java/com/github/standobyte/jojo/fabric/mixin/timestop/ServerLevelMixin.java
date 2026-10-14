@@ -22,6 +22,8 @@ public abstract class ServerLevelMixin {
 
     @Inject(method = "tickNonPassenger", at = @At("HEAD"), cancellable = true)
     private void jojoCancelTickNonPassenger(Entity entity, CallbackInfo ci) {
+        if (entity instanceof com.github.standobyte.jojo.fabric.KnifeEntity knife)
+            knife.setTimeStopped(TimeStopService.isTimeStopped(entity.level(), entity.chunkPosition()));
         if (TimeStopService.isFrozen(entity)) {
             if (entity instanceof LivingEntity living && !(living instanceof net.minecraft.server.level.ServerPlayer) && living.damageCooldownTime > 0) living.damageCooldownTime--;
             for (Entity passenger : entity.getPassengers()) {
@@ -33,6 +35,8 @@ public abstract class ServerLevelMixin {
 
     @Inject(method = "tickPassenger", at = @At("HEAD"), cancellable = true)
     private void jojoCancelTickPassenger(Entity vehicle, Entity passenger, CallbackInfo ci) {
+        if (passenger instanceof com.github.standobyte.jojo.fabric.KnifeEntity knife)
+            knife.setTimeStopped(TimeStopService.isTimeStopped(passenger.level(), passenger.chunkPosition()));
         if (TimeStopService.isFrozen(passenger)) {
             if (passenger instanceof LivingEntity living && !(living instanceof net.minecraft.server.level.ServerPlayer) && living.damageCooldownTime > 0) living.damageCooldownTime--;
             ci.cancel();

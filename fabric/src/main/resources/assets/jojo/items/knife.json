@@ -1,0 +1,61 @@
+{
+  "model": {
+    "type": "minecraft:range_dispatch",
+    "property": "jojo:count",
+    "entries": [
+      {
+        "threshold": 2,
+        "model": {
+          "type": "minecraft:model",
+          "model": "jojo:item/knives2"
+        }
+      },
+      {
+        "threshold": 3,
+        "model": {
+          "type": "minecraft:model",
+          "model": "jojo:item/knives3"
+        }
+      },
+      {
+        "threshold": 4,
+        "model": {
+          "type": "minecraft:model",
+          "model": "jojo:item/knives4"
+        }
+      },
+      {
+        "threshold": 5,
+        "model": {
+          "type": "minecraft:model",
+          "model": "jojo:item/knives5"
+        }
+      },
+      {
+        "threshold": 6,
+        "model": {
+          "type": "minecraft:model",
+          "model": "jojo:item/knives6"
+        }
+      },
+      {
+        "threshold": 7,
+        "model": {
+          "type": "minecraft:model",
+          "model": "jojo:item/knives7"
+        }
+      },
+      {
+        "threshold": 8,
+        "model": {
+          "type": "minecraft:model",
+          "model": "jojo:item/knives8"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "jojo:item/knife"
+    }
+  }
+}

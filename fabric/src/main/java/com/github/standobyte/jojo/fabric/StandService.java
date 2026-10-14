@@ -22,7 +22,7 @@ public final class StandService {
                 StandMovement.update(player);
                 if (TimeStopService.isFrozen(player)) continue;
                 StandProgress progress = player.getAttachedOrCreate(StandAttachments.PROGRESS);
-                if (!progress.hasStarPlatinum()) continue;
+                if (!progress.hasStand()) continue;
                 StarPlatinumEntity stand = current(player);
                 StandProgress next = progress.regenerate(stand != null, (stand == null || stand.allowsStaminaRegen()) && !TimeStopService.isCharging(player) && !TimeStopService.isActive(player),
                         player.getFoodData().getFoodLevel(), player.isCreative());
@@ -30,16 +30,18 @@ public final class StandService {
             }
             SUMMONS.values().removeIf(StarPlatinumEntity::isRemoved);
         });
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+        // Fabric may fire disconnect from Netty's channelInactive; never mutate world state there.
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> server.execute(() -> {
             dismiss(handler.player);
             LAST_TOGGLE.remove(handler.player.getUUID());
-        });
+        }));
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> { SUMMONS.clear(); LAST_TOGGLE.clear(); AbilityCooldowns.clear(); });
     }
 
     public static StarPlatinumEntity current(ServerPlayer player) {
         StarPlatinumEntity stand = SUMMONS.get(player.getUUID());
         if (stand != null && (stand.isRemoved() || stand.level() != player.level() || stand.owner() != player)) {
+            if (!stand.level().getServer().isSameThread()) throw new IllegalStateException("Cross-server Stand mutation from " + Thread.currentThread().getName());
             stand.discard();
             SUMMONS.remove(player.getUUID());
             return null;
@@ -49,7 +51,7 @@ public final class StandService {
 
     public static boolean toggle(ServerPlayer player) {
         if (TimeStopService.isFrozen(player) || TimeStopService.isCharging(player)) return false;
-        if (!player.isAlive() || player.isSpectator() || !player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStarPlatinum()) return false;
+        if (!player.isAlive() || player.isSpectator() || !player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStand()) return false;
         StarPlatinumEntity existing = current(player);
         if (existing != null && existing.actionPhase() == StarPlatinumEntity.PHASE_GUARD_BROKEN) return false;
         long tick = player.level().getGameTime();
@@ -57,7 +59,7 @@ public final class StandService {
         if (previous != null && tick - previous < 5) return false;
         LAST_TOGGLE.put(player.getUUID(), tick);
         if (current(player) != null) { dismiss(player); return true; }
-        StarPlatinumEntity stand = new StarPlatinumEntity(RipplesFabric.STAR_PLATINUM, player.level());
+        StarPlatinumEntity stand = new StarPlatinumEntity(player.getAttachedOrCreate(StandAttachments.PROGRESS).hasTheWorld() ? RipplesFabric.THE_WORLD : RipplesFabric.STAR_PLATINUM, player.level());
         stand.setOwner(player);
         if (!player.level().addFreshEntity(stand)) return false;
         SUMMONS.put(player.getUUID(), stand);
@@ -71,6 +73,7 @@ public final class StandService {
         StarPlatinumEntity stand = SUMMONS.remove(player.getUUID());
         if (stand != null && !stand.isRemoved()) {
             stand.playOriginal("star_platinum_unsummon");
+            if (!stand.level().getServer().isSameThread()) throw new IllegalStateException("Cross-server Stand mutation from " + Thread.currentThread().getName());
             stand.discard();
         }
     }
@@ -131,10 +134,13 @@ public final class StandService {
         return stand == null ? damage : stand.protectOwner(source, damage);
     }
 
-    public static void grant(ServerPlayer player) {
+    public static void grant(ServerPlayer player) { grant(player, StandProgress.STAR_PLATINUM); }
+
+    public static void grant(ServerPlayer player, String standId) {
         StandArrowService.cancel(player);
         dismiss(player);
-        player.setAttached(StandAttachments.PROGRESS, StandProgress.grantStarPlatinum(player.isCreative()));
+        ProgressionService.onClear(player);
+        player.setAttached(StandAttachments.PROGRESS, StandProgress.grant(standId, player.isCreative()));
         ProgressionService.onGrant(player);
     }
 

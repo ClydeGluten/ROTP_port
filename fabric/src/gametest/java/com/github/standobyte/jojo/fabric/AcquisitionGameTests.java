@@ -45,8 +45,8 @@ public final class AcquisitionGameTests {
         test.assertTrue(use(player) == InteractionResult.SUCCESS, "Arrow accepts Survival use");
         test.assertValueEqual(player.getMainHandItem().getDamageValue(), 1, "Piercing costs one of 25 durability");
         test.assertValueEqual(player.getAttachedOrCreate(StandAttachments.ARROW).remainingTicks(), 620, "Original 31-second maximum virus duration");
-        test.assertFalse(player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStarPlatinum(), "Survival acquisition is not instant");
-        test.startSequence().thenWaitUntil(() -> test.assertTrue(player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStarPlatinum(), "Wait for paid awakening"))
+        test.assertFalse(player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStand(), "Survival acquisition is not instant");
+        test.startSequence().thenWaitUntil(() -> test.assertTrue(player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStand(), "Wait for paid awakening"))
                 .thenExecute(() -> {
                     test.assertValueEqual(player.experienceLevel, 0, "Exactly thirty XP levels paid");
                     test.assertTrue(player.isAlive(), "Paying player survives the virus");
@@ -78,8 +78,8 @@ public final class AcquisitionGameTests {
         var player = player(test, 0);
         player.getAbilities().invulnerable = true; // Isolate the original survival-through-expiration route from lethal damage.
         use(player);
-        test.runAtTickTime(600, () -> test.assertFalse(player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStarPlatinum(), "Unpaid virus cannot finish early"));
-        test.startSequence().thenWaitUntil(() -> test.assertTrue(player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStarPlatinum(), "Surviving the full virus grants a Stand"))
+        test.runAtTickTime(600, () -> test.assertFalse(player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStand(), "Unpaid virus cannot finish early"));
+        test.startSequence().thenWaitUntil(() -> test.assertTrue(player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStand(), "Surviving the full virus grants a Stand"))
                 .thenExecute(() -> {
                     test.assertTrue(test.getTick() >= 619, "Full original duration elapsed");
                     test.assertValueEqual(player.experienceLevel, 0, "No nonexistent XP is charged");
@@ -93,7 +93,7 @@ public final class AcquisitionGameTests {
         use(player);
         test.startSequence().thenWaitUntil(() -> test.assertFalse(player.isAlive(), "Unpaid virus kills player"))
                 .thenExecute(() -> {
-                    test.assertFalse(player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStarPlatinum(), "Death does not grant a Stand");
+                    test.assertFalse(player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStand(), "Death does not grant a Stand");
                     test.assertFalse(player.getAttachedOrCreate(StandAttachments.ARROW).infected(), "Death clears pending virus");
                     test.assertValueEqual(player.getAttachedOrCreate(StandAttachments.ARROW).acquired(), 0, "Failed attempt does not increase cost");
                 }).thenSucceed();
@@ -103,7 +103,7 @@ public final class AcquisitionGameTests {
         var player = player(test, 0);
         player.setGameMode(GameType.CREATIVE);
         test.assertTrue(use(player) == InteractionResult.SUCCESS, "Creative use succeeds");
-        test.assertTrue(player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStarPlatinum(), "Creative grants immediately");
+        test.assertTrue(player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStand(), "Creative grants immediately");
         test.assertValueEqual(player.getMainHandItem().getDamageValue(), 0, "Creative does not damage arrow");
         test.assertValueEqual(player.experienceLevel, 0, "Creative does not need XP");
         test.assertValueEqual(player.getAttachedOrCreate(StandAttachments.ARROW).acquired(), 1, "Creative acquisition is recorded");
@@ -123,7 +123,7 @@ public final class AcquisitionGameTests {
             test.assertValueEqual(arrow.nextCost(), 35, "Death cannot reset the escalating XP cost");
             test.assertFalse(arrow.infected() || arrow.healing(), "Interrupted attempt and recovery do not survive death");
             test.assertFalse(replacement.hasEffect(StandItems.STAND_VIRUS), "Respawn has no virus effect");
-            test.assertFalse(replacement.getAttachedOrCreate(StandAttachments.PROGRESS).hasStarPlatinum(), "Death/respawn cannot grant a pending Stand");
+            test.assertFalse(replacement.getAttachedOrCreate(StandAttachments.PROGRESS).hasStand(), "Death/respawn cannot grant a pending Stand");
             test.succeed();
         });
     }
@@ -151,7 +151,7 @@ public final class AcquisitionGameTests {
         test.assertFalse(player.hasEffect(MobEffects.POISON), "Milk still cures other effects");
         test.runAtTickTime(15, () -> {
             test.assertTrue(player.getAttachedOrCreate(StandAttachments.ARROW).paidLevels() >= 1, "Virus still consumes XP after milk");
-            test.assertFalse(player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStarPlatinum(), "Milk does not skip acquisition");
+            test.assertFalse(player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStand(), "Milk does not skip acquisition");
             StandArrowService.cancel(player); test.succeed();
         });
     }
@@ -172,7 +172,7 @@ public final class AcquisitionGameTests {
         player.removeEffect(StandItems.STAND_VIRUS);
         test.runAtTickTime(4, () -> {
             test.assertFalse(player.getAttachedOrCreate(StandAttachments.ARROW).infected(), "Administrator effect removal cancels attempt");
-            test.assertFalse(player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStarPlatinum(), "Effect removal cannot bypass XP acquisition");
+            test.assertFalse(player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStand(), "Effect removal cannot bypass XP acquisition");
             test.succeed();
         });
     }

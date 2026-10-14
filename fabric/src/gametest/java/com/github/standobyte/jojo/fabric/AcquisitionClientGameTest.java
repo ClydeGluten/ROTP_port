@@ -40,7 +40,7 @@ public final class AcquisitionClientGameTest implements FabricClientGameTest {
             world.getServer().runOnServer(server -> {
                 var player = server.getPlayerList().getPlayer(id);
                 if (player.getMainHandItem().getDamageValue() != 1 || player.getOffhandItem().getDamageValue() != 0) throw new AssertionError("Self-piercing consumed the wrong arrow");
-                if (player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStarPlatinum()) throw new AssertionError("Survival acquired instantly");
+                if (player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStand()) throw new AssertionError("Survival acquired instantly");
             });
             save = world.getWorldSave();
         }
@@ -52,20 +52,26 @@ public final class AcquisitionClientGameTest implements FabricClientGameTest {
                 if (arrow.paidLevels() < paidBeforeClose || arrow.requiredLevels() != 30) throw new AssertionError("Reload lost acquisition progress");
             });
             context.takeScreenshot("arrow-infection-restored");
-            context.waitFor(client -> client.player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStarPlatinum(), 500);
+            context.waitFor(client -> client.player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStand(), 500);
             reopened.getServer().runOnServer(server -> {
                 var player = server.getPlayerList().getPlayer(id);
                 if (player.experienceLevel != 0 || player.getAttachedOrCreate(StandAttachments.ARROW).acquired() != 1) throw new AssertionError("Reloaded acquisition charged the wrong XP or granted twice");
             });
             context.waitFor(client -> !client.player.hasEffect(StandItems.STAND_VIRUS));
-            context.getInput().pressKey(InputConstants.KEY_G);
+            context.getInput().pressKey(net.minecraft.client.KeyMapping.get("key.jojo.fabric.summon"));
             reopened.getServer().waitFor(server -> StandService.current(server.getPlayerList().getPlayer(id)) != null);
             context.waitTicks(10);
             context.runOnClient(client -> client.options.setCameraType(CameraType.THIRD_PERSON_FRONT));
             context.takeScreenshot("arrow-survival-awakening");
         }
         try (var reopened = save.open()) {
-            context.waitFor(client -> client.player != null && client.player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStarPlatinum());
+            context.waitFor(client -> client.player != null && client.player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStand());
+            reopened.getServer().runOnServer(server -> {
+                var cycle = StandAssignments.getCycle(server);
+                if (cycle.generation() != 1 || cycle.used().size() != 1) throw new AssertionError("World reload lost or repeated awakening reservation");
+                var owner = server.getPlayerList().getPlayers().getFirst();
+                if (!cycle.used().contains(owner.getAttachedOrCreate(StandAttachments.PROGRESS).standId())) throw new AssertionError("Saved reservation differs from owner");
+            });
             context.runOnClient(client -> {
                 var arrow = client.player.getAttachedOrCreate(StandAttachments.ARROW);
                 if (arrow.acquired() != 1 || arrow.nextCost() != 35 || arrow.infected()) throw new AssertionError("Successful arrow history did not persist");
@@ -96,7 +102,7 @@ public final class AcquisitionClientGameTest implements FabricClientGameTest {
             try (var connection = server.connect()) {
                 connection.waitForChunksRender();
                 context.waitFor(client -> client.player.getAttachedOrCreate(StandAttachments.ARROW).infected());
-                context.waitFor(client -> client.player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStarPlatinum(), 500);
+                context.waitFor(client -> client.player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStand(), 500);
                 var id = context.computeOnClient(client -> client.player.getUUID());
                 server.runOnServer(minecraft -> {
                     var player = minecraft.getPlayerList().getPlayer(id);

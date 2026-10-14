@@ -55,12 +55,12 @@ public final class ProgressionScreen extends Screen {
 
     private ResolveProgress resolve() {
         var player = minecraft == null ? null : minecraft.player;
-        return player == null ? null : player.getAttachedOrCreate(StandAttachments.RESOLVE);
+        return player == null ? null : StandAttachments.resolve(player);
     }
 
     private boolean hasStand() {
         var player = minecraft == null ? null : minecraft.player;
-        return player != null && player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStarPlatinum();
+        return player != null && player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStand();
     }
 
     private boolean creative() {
@@ -126,16 +126,17 @@ public final class ProgressionScreen extends Screen {
 
         text(rows, w, Component.translatable("jojo.fabric.progress.moves_title"), GOLD);
         int lv = r.level();
-        move(rows, w, Component.translatable("jojo.fabric.progress.move.punch", key("light")), 0, lv);
-        move(rows, w, Component.translatable("jojo.fabric.progress.move.heavy", key("heavy")), 0, lv);
-        move(rows, w, Component.translatable("jojo.fabric.progress.move.barrage", key("barrage")), 0, lv);
-        move(rows, w, Component.translatable("jojo.fabric.progress.move.guard", key("guard")), 0, lv);
-        move(rows, w, Component.translatable("jojo.fabric.progress.move.zoom", key("zoom")), 0, lv);
-        move(rows, w, Component.translatable("jojo.fabric.progress.move.manual", key("control")), 0, lv);
-        move(rows, w, Component.translatable("jojo.fabric.progress.move.uppercut", key("uppercut")), 1, lv);
-        move(rows, w, Component.translatable("jojo.fabric.progress.move.inhale", key("inhale")), 2, lv);
-        move(rows, w, Component.translatable("jojo.fabric.progress.move.finger", key("finger")), 3, lv);
-        move(rows, w, Component.translatable("jojo.fabric.progress.move.time_stop", key("time_stop")), 4, lv);
+        for (String id : ActionCatalog.attacks(ActionCatalog.world())) {
+            var action = ActionCatalog.move(id); move(rows, w, action.name(), action.level(), lv);
+        }
+        for (String id : ActionCatalog.abilities(ActionCatalog.world())) {
+            var action = ActionCatalog.move(id); move(rows, w, action.name(), action.level(), lv);
+        }
+        // Blink is a Shift variation, so it has no separate default hotbar slot.
+        var blink = ActionCatalog.move("blink");
+        move(rows, w, blink.name(), blink.level(), lv);
+        text(rows, w, Component.translatable("jojo.fabric.progress.blink_input",
+                Component.keybind(minecraft.options.keyShift.getName())), LILAC);
         gap(rows);
 
         text(rows, w, Component.translatable("jojo.fabric.progress.time_title"), GOLD);
@@ -143,7 +144,7 @@ public final class ProgressionScreen extends Screen {
                 String.format(java.util.Locale.ROOT, "%.2f", r.timeStopTicks() / 20F), "5.0"), WHITE);
         text(rows, w, Component.translatable("jojo.fabric.progress.time_points", Math.round(r.trainingPoints() * 10) / 10F, 95), WHITE);
         rows.add(new Row(null, 0, Math.clamp(r.trainingPoints() / 95F, 0F, 1F), 0xFF5CC8FF));
-        text(rows, w, Component.translatable("jojo.fabric.progress.time_training"), LILAC);
+        text(rows, w, Component.translatable(ActionCatalog.world() ? "jojo.fabric.progress.world_training" : "jojo.fabric.progress.time_training"), LILAC);
         if (creative) text(rows, w, Component.translatable("jojo.fabric.progress.time_creative"), CYAN);
         return rows;
     }

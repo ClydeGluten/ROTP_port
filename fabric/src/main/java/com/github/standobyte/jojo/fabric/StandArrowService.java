@@ -16,6 +16,7 @@ public final class StandArrowService {
     private static final ResourceKey<DamageType> VIRUS_DAMAGE = ResourceKey.create(Registries.DAMAGE_TYPE, RipplesFabric.id("stand_virus"));
 
     public static void initialize() {
+        StandAssignments.initialize();
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             for (var player : server.getPlayerList().getPlayers()) tick(player);
         });
@@ -78,7 +79,8 @@ public final class StandArrowService {
     }
 
     private static void complete(ServerPlayer player, ArrowProgress progress) {
-        StandService.grant(player);
+        String standId = StandAssignments.allocateStand(player);
+        StandService.grant(player, standId);
         player.setAttached(StandAttachments.ARROW, progress.acquiredStand());
         player.sendSystemMessage(Component.translatable("jojo.fabric.arrow.awakened", Component.keybind("key.jojo.fabric.summon")));
     }

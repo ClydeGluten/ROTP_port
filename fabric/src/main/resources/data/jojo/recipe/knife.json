@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "i",
+    "s"
+  ],
+  "key": {
+    "i": "#c:ingots/iron",
+    "s": "#c:rods/wooden"
+  },
+  "result": {
+    "id": "jojo:knife",
+    "count": 4
+  }
+}

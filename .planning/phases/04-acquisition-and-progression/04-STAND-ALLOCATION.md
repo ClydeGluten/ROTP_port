@@ -1,6 +1,8 @@
-# Planned Stand allocation generations
+# Stand allocation generations
 
-Status: roadmap specification only. Draft 7 still has one playable Stand and does not implement an allocation pool.
+Status: Draft 8 implements the normal-play distribution rule for Star Platinum and The World. World-level state is shared across dimensions and saved; per-player provisional choices and a permanent migration marker survive death/relogin. Direct operator grants bypass natural allocation. Existing pre-update owners seed once when they first join. New catalog entries join an unfinished generation; permanent ownership uses stable IDs. Crash recovery across partially saved world/player files, offline legacy-owner scanning and fully configurable pools remain future work.
+
+The confirmed distribution rules below are implemented. The broader recovery and compatibility items under the original implementation plan remain acceptance targets; they are not all claimed complete.
 
 ## Confirmed user rules
 

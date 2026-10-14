@@ -3,6 +3,7 @@
   "package": "com.github.standobyte.jojo.fabric.mixin.timestop",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
+    "LivingEntityMixin",
     "LevelMixin",
     "ServerGamePacketListenerImplMixin",
     "ServerLevelMixin",

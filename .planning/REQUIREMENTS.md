@@ -17,8 +17,10 @@
 
 ## Later Milestones
 
-- [x] CAMERA-01: Keep the local Stand from obstructing first-person and third-person play while preserving aim and collision.
-- [ ] ASSIGN-01: Assign tentative random `1..n` Stand candidates and reserve only on successful awakening; award each playable Stand once per server generation before repeating.
+- [x] CAMERA-01: Keep the local Stand from obstructing play; provide stable independent third-person orbit, camera-relative movement, correct aim and wall collision.
+- [x] HUD-01: Port the supported original Stand overlay, textured bars, folding rows, selection/control methods and editor; retain server cooldown/resource feedback and saved per-Stand layouts.
+- [x] WORLD-01: Make The World playable with original model, textures, animation, distinct combat and human Time Stop progression.
+- [x] ASSIGN-01: Assign tentative random `1..n` Stand candidates and reserve only on successful awakening; award each playable Stand once per server generation before repeating.
 
 - [ ] PARITY-01: Complete Star Platinum abilities, including time stop and advanced combat.
 - [ ] PARITY-02: Restore survival acquisition, progression, and power UI.
@@ -32,5 +34,5 @@
 | BASE-01, BASE-02, BASE-03 | 1 |
 | COMBAT-01, COMBAT-02, COMBAT-03, COMBAT-04, BUILD-01, TEST-01 | 2 |
 | PARITY-01, CAMERA-01 | 3 |
-| PARITY-02, ASSIGN-01 | 4 |
-| PARITY-03, PARITY-04 | 5 |
+| PARITY-02, ASSIGN-01, HUD-01 | 4 |
+| PARITY-03, PARITY-04, WORLD-01 | 5 |

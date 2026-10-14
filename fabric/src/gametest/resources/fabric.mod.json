@@ -11,13 +11,29 @@
       "com.github.standobyte.jojo.fabric.TimeStopGameTests",
       "com.github.standobyte.jojo.fabric.MovementGameTests",
       "com.github.standobyte.jojo.fabric.AcquisitionGameTests",
-      "com.github.standobyte.jojo.fabric.ProgressionGameTests"
+      "com.github.standobyte.jojo.fabric.ProgressionGameTests",
+      "com.github.standobyte.jojo.fabric.StandHudGameTests",
+      "com.github.standobyte.jojo.fabric.StandAssignmentGameTest",
+      "com.github.standobyte.jojo.fabric.TheWorldGameTest",
+      "com.github.standobyte.jojo.fabric.HitReactionGameTests",
+      "com.github.standobyte.jojo.fabric.TimeSkipGameTests",
+      "com.github.standobyte.jojo.fabric.TimeStopCombatGameTests",
+      "com.github.standobyte.jojo.fabric.TimePunchGameTests",
+      "com.github.standobyte.jojo.fabric.DisconnectGameTests",
+      "com.github.standobyte.jojo.fabric.KnifeGameTests",
+      "com.github.standobyte.jojo.fabric.KnifeItemGameTests"
     ],
     "fabric-client-gametest": [
+      "com.github.standobyte.jojo.fabric.ControlsClientGameTest",
+      "com.github.standobyte.jojo.fabric.HitReactionClientGameTest",
       "com.github.standobyte.jojo.fabric.StandClientGameTest",
       "com.github.standobyte.jojo.fabric.AcquisitionClientGameTest",
       "com.github.standobyte.jojo.fabric.ProgressionClientGameTest",
-      "com.github.standobyte.jojo.fabric.CameraClientGameTest"
+      "com.github.standobyte.jojo.fabric.CameraClientGameTest",
+      "com.github.standobyte.jojo.fabric.ActionHudClientGameTest",
+      "com.github.standobyte.jojo.fabric.TimeActionsClientGameTest",
+      "com.github.standobyte.jojo.fabric.TimeStopCombatClientGameTest",
+      "com.github.standobyte.jojo.fabric.KnifeClientGameTest"
     ]
   }
 }

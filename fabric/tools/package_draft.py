@@ -44,6 +44,8 @@ def main() -> None:
         assert not any("GameTest" in name or name.endswith("mods.toml") for name in archive.namelist())
     model_check = subprocess.run([sys.executable, str(FABRIC / "tools/verify_star_platinum_model.py")],
                                  capture_output=True, text=True, check=True)
+    world_model_check = subprocess.run([sys.executable, str(FABRIC / "tools/verify_the_world_model.py")],
+                                       capture_output=True, text=True, check=True)
     api_candidates = list((Path.home() / ".gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-api"
                            / properties["fabric_api_version"]).glob("*/*.jar"))
     api_candidates = [p for p in api_candidates if not p.name.endswith(("-sources.jar", "-javadoc.jar"))]
@@ -56,7 +58,7 @@ def main() -> None:
     shutil.copy2(jar, mods / "RipplesOfThePast-Fabric-latest.jar")
     shutil.copy2(api_candidates[0], mods / api_candidates[0].name)
     shutil.copy2(log, destination / "verification.log")
-    (destination / "model-verification.txt").write_text(model_check.stdout + model_check.stderr)
+    (destination / "model-verification.txt").write_text(model_check.stdout + model_check.stderr + world_model_check.stdout + world_model_check.stderr)
     (destination / "START-HERE.txt").write_text(f"""Ripples of the Past — Fabric draft {version}
 
 Fastest local launch:
@@ -68,69 +70,109 @@ Or use your Minecraft launcher:
   Remove any older Ripples of the Past JAR from that instance first.
   Create a fresh test world. Old Forge saves are not migrated.
 
-New in Draft 7: camera comfort
-  First-person: your own Stand and Star Finger fade so attacks do not block your view.
-  Rear third-person: camera moves to the opposite shoulder and clips against walls.
-  Camera aim converges on your player aim ray; attacks retain their normal origin and reach.
-  Manual control hides the Stand body while viewing through its eyes.
-  Dismissal and perspective changes restore the normal camera automatically.
-  Test near a wall, while guarding/barraging, and while holding/releasing H.
-  Random Stand allocation generations are on the roadmap; they are not implemented yet.
+Draft 11: knives and The World volley
+  Craft four knives with an iron ingot above a stick. Maximum stack: sixteen.
+  Right-click throws up to eight; Shift + right-click throws one. Hold Alt while Stand mode captures right-click.
+  Summoned The World throws up to eight more from the remaining stack. Survival stack16 throws16; stack8 throws8.
+  Cooldown is three ticks per primary knife. No added stamina or Resolve requirement.
+  During Time Stop, thrown knives fly for five ticks, then freeze. Entity hits wait until time resumes.
+  Resume traces collision again: moving out of the knife's path can avoid the hit. Melee damage remains immediate.
+  Recover knives embedded in blocks. Creative knives cannot be collected in Survival.
+  One held knife gives +2 melee damage and cuts cobweb quickly. Any stack strips logs without being consumed.
+  Knives stuck in players use the original appearance and decay timer. Stack models use the original textures.
+  Test ordinary throws, Shift throws and frozen volleys against mobs and another player, then save/reload.
+  Commands: /give @s jojo:knife 16; /rotp grant @s the_world; M to summon.
 
-Draft 6: Stand Resolve and Time Stop training
-  K opens Stand progression. Scroll or use Up/Down/Home/End; Esc closes it.
-  Land Stand hits on hostile mobs/players to gain Resolve. Low health and sustained combat boost gains.
-  Survival unlocks: Uppercut at level 1, Inhale 2, Star Finger 3, Time Stop 4.
-  Existing Fabric Stands keep ownership/development but now follow these Survival gates.
-  Time Stop starts at 0.25 seconds. Actual use trains duration up to 5 seconds.
-  Resolve bursts give damage resistance, 4x training, and shorter ability cooldowns.
-  Levels/training survive death and reload; death resets the current combat meter.
-  Creative retains all moves and full Time Stop duration.
-  Operators: /rotp progression @s level 4 and /rotp progression @s training 95 for full testing.
-  /rotp progression @s reset clears earned progress while keeping the Stand.
-  Setting a level or resetting dismisses the Stand; summon again with G.
+Draft 10: original time actions
+  Time Stop damage and kill credit apply immediately. Frozen knockback stacks and moves targets on resume.
+  The World's extra frozen-heavy impact sound waits for thaw.
+  U or Shift + selected Time Stop uses Quick move with either Stand, including while unsummoned.
+  Star Platinum stops in front of a target; The World moves behind its facing.
+  Blink has its own cooldown and gives no Time Stop learning; depleted stamina still permits the original short move.
+  I: The World Time Stop Punch; hold Shift for backshot. Works from manual control and cancels attack recovery.
+  First resume click shortens Time Stop to eleven ticks; another resumes immediately.
+  Check these actions in first person and F5, against mobs and another player.
 
-Survival Stand Arrow acquisition
-  Find a Beetle Stand Arrow in an unopened desert-pyramid chest (2% bonus chance per chest).
-  Gather 30 XP levels for the first awakening; each prior arrow awakening adds 5 levels.
-  Use/right-click the arrow to pierce yourself. The virus takes 1 XP level every half-second.
-  Without enough XP it can kill you; milk cannot cure it. Survive to receive Star Platinum.
-  Paid acquisition takes about 15 seconds at the initial cost; surviving the full virus also awakens it.
-  Infection resumes after save/reload or reconnect. Successful acquisition heals you afterward.
-  Only Star Platinum is available. Shooting arrows and meteorite crafting remain pending.
+Draft 9.2 hotfix: mob hit reactions
+  Rapid Stand hits now use the original independent timing instead of losing hits to vanilla immunity.
+  Barrage applies the original small push and triggers passive-mob panic.
+  The World's Time Stop Punch re-aims after moving so it can hit short mobs.
+  Check repeated punches, heavy hits and barrage against cows and hostile mobs with either Stand.
 
-Quick controlled test (commands enabled, preferably a new player/world):
-  /rotp clear @s
-  /give @s jojo:stand_arrow_beetle
-  /experience set @s 30 levels
-  /gamemode survival
-  Then hold the arrow and use/right-click it. G summons after awakening.
-  Both arrow variants also appear in Creative's Combat tab; Creative use awakens instantly.
+Draft 9.1 hotfix: world-entry crash
+  Fixes invalid unbound heavy/uppercut keys that crashed native keyboard polling after world loading.
+  Existing Draft 9 settings repair automatically on launch; custom bindings remain.
+  Previous options are saved in config/jojo/options-before-unbound-key-repair.txt.
 
-Existing combat shortcut:
+Draft 9: original Stand HUD and independent third-person camera
+  F5: orbit freely around your player; WASD moves relative to the visible camera.
+  Targets crossing your aim no longer turn or reposition the camera.
+  Vanilla wall clipping remains. Attacks and item use follow the crosshair.
+  First-person Stand/finger fading and manual-control body hiding remain.
+  Original 1.16 Stand bars, ornaments, folding rows, icons, names and cooldown wipes replace Draft 8's custom UI.
+
+Controls (remappable in Minecraft Controls)
+  M: summon/dismiss. K: toggle Stand HUD mode.
+  Left/right mouse: selected attack/ability while Stand mode is active.
+  Hold V/B + wheel or number key: select attack/ability; an empty slot yields vanilla input.
+  Hold Alt: temporarily use normal Minecraft mouse actions.
+  Shift + selected punch/barrage: heavy attack; at half finisher charge, uppercut/The World Kick.
+  Backslash: original layout editor. Left-click pick/place, right-click enable/disable.
+  Move actions between rows, or use number keys to reorder. Done, Escape and backslash SAVE.
+  O held: manual control; WASD moves the Stand, Space/Shift moves vertically. Release to return.
+  H: progression screen; scroll or use Up/Down/Home/End, Escape closes.
+  Direct shortcuts: R punch; hold Z barrage, X guard, N inhale, Y zoom; C Star Finger.
+  J: charge Time Stop, press again to resume. U: either Stand Quick move. I: The World Time Stop Punch.
+  Heavy/uppercut direct shortcuts start unbound; bind them in Controls if wanted.
+  Mouse-selected Time Stop must be held until charged. Releasing early cancels charging.
+  With either Stand, Shift + selected Time Stop uses Quick move. Shift + Time Stop Punch uses backshot.
+  Draft 8 default keys migrate once; custom rebindings remain. Previous options are backed up in config/jojo/.
+
+Quick controlled playtest (commands enabled)
   /rotp grant @s star_platinum
-  G: summon / dismiss. R: light punch. V: heavy punch.
-  Hold Z: barrage (up to five seconds at base stats). Release and repress after it ends.
-  Hold X: frontal guard. Guard consumes stamina when hit and breaks when exhausted.
-  B: uppercut. C: Star Finger. Hold N: inhale. Hold Y: progressive zoom.
-  Hold H: manual control; WASD moves the Stand, Space/Shift moves vertically. Release to return.
-  J: charge time stop (two seconds); press again to resume. Maximum stop: five seconds.
-  Controls can be rebound. Survival stamina starts empty and regenerates.
-  Creative has unlimited stamina; its HUD says Unlimited instead of showing a finite bar.
-  To check drain and refill after granting: /gamemode survival, then hold Z and release.
-  Finisher charge builds through punches and landed barrage hits. At 50% and Resolve level 1, V becomes an uppercut.
-  Barrage allows 15% walking speed, guard 30%, heavy/special actions 50%; recovery restores speed.
+  M summons and opens Stand mode. Test the two mouse rows, Shift variants and V/B selection.
+  /rotp grant @s the_world
+  M summons The World. Check its Kick, Time Skip and Time Stop Punch.
+  Creative unlocks all moves and has unlimited stamina. For stamina drain/refill, use Survival.
+  /rotp progression @s level 4
+  /rotp progression @s training 95
+  These give full Survival unlocks and human Time Stop training. Level changes dismiss the Stand; summon again.
+  /rotp progression @s reset clears earned progress but keeps ownership.
 
-Playtest: summon, aim at a nearby mob, try all attacks, hold/release guard,
-open a menu while holding an action, save/reload, and check Controls rebinding.
+Please check
+  F5 orbit while standing, walking, attacking and near walls; switch front/rear/first-person views.
+  Summon/dismiss and hold/release O. Camera should stay stable when a mob crosses the crosshair.
+  HUD at your GUI scale, original row folding, cooldowns, stamina drain and regeneration.
+  Backslash editor: reorder, cross-row moves, enable/disable, close/save, then reload the world.
+  Hold/release barrage, guard and Time Stop; open menus while holding an action.
 
-This is an incomplete development port. Barrage clashes, time-stop blink,
-other powers (including Hamon) and the original customizable ability-selection UI are not implemented.
-See fabric/migration/STATUS.md in the source project for exact parity limits.
+Existing Survival progression
+  Find a Beetle Stand Arrow in an unopened desert-pyramid chest (2% bonus chance per chest).
+  Gather 30 XP levels for the first awakening; each previous arrow awakening adds 5 levels.
+  Use the arrow to pierce yourself. The virus takes one XP level every half-second.
+  Without enough XP it can kill you; milk cannot cure it. Successful awakening heals afterward.
+  Arrow awakenings award Star Platinum and The World once each per generation, then repeat.
+  Provisional choices reserve nothing until successful awakening; command grants bypass allocation.
+  Infection, ownership, Resolve and separate Stand learning survive ordinary save/reload.
+  Land Stand hits on hostile mobs/players to gain Resolve; low health and sustained combat boost gains.
+  Star Platinum unlocks: Uppercut 1, Inhale 2, Star Finger 3, Time Stop / Quick move 4.
+  The World unlocks: Kick 1, Time Stop / Time Skip 2, Time Stop Punch 3.
+  Survival Time Stop begins at 0.25 seconds and trains through use up to five seconds.
+  Hamon training is separate and remains unported.
+
+This is an incomplete development port. The supported Stand HUD uses original source methods/assets;
+non-Stand UI, custom action-keybind slots and alternative HUD anchors remain pending.
+Barrage clashes, Stone Mask knife interaction, vampirism, further Stands/content, overlapping Time Stop/immunity, original
+Time Stop shaders and crash recovery between separate allocation saves remain pending.
+See fabric/migration/STATUS.md, KNIFE_PARITY.md, TIME_STOP_PARITY.md and ORIGINAL_HUD_CAMERA.md for scope and source mappings.
 Original assets and GPL-3.0 license retained; full source remains in the project.
 """)
     screenshots = FABRIC / "build/run/clientGameTest/screenshots"
-    playtest_screenshots = sorted({*screenshots.glob("*progression*.png"), *screenshots.glob("*camera*.png")})
+    playtest_screenshots = sorted({*screenshots.glob("*progression*.png"), *screenshots.glob("*camera*.png"),
+                                  *screenshots.glob("*hud*.png"), *screenshots.glob("*stamina*.png"),
+                                  *screenshots.glob("*hit-reaction*.png"), *screenshots.glob("*time-actions*.png"),
+                                  *screenshots.glob("*time-skip*.png"), *screenshots.glob("*time-stop-player*.png"),
+                                  *screenshots.glob("*time-stop-frozen*.png"), *screenshots.glob("*knives*.png")})
     if playtest_screenshots:
         (destination / "screenshots").mkdir(exist_ok=True)
         for screenshot in playtest_screenshots:

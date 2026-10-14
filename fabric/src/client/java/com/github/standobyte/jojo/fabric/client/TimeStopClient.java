@@ -48,7 +48,7 @@ public final class TimeStopClient {
             if (payload.state() == TimeStopPayload.State.RESUME || payload.ticksRemaining() <= 0) STOPS.remove(payload.casterUuid());
             else STOPS.put(payload.casterUuid(), new Stop(payload));
         }));
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> reset());
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> client.execute(() -> reset()));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.level == null) { reset(); return; }
             Identifier dimension = client.level.dimension().identifier();
@@ -66,7 +66,8 @@ public final class TimeStopClient {
         return player == null ? 0 : STOPS.values().stream().filter(stop -> stop.contains(player)).mapToInt(stop -> stop.ticks).max().orElse(0);
     }
     public static boolean isFrozen(Entity entity) {
-        return entity != null && !entity.isRemoved() && STOPS.values().stream().anyMatch(stop -> stop.contains(entity) && !stop.immune(entity));
+        return entity != null && !entity.isRemoved()
+                && (!(entity instanceof com.github.standobyte.jojo.fabric.KnifeEntity knife) || knife.getTimeStopFlightTicks() == 0) && STOPS.values().stream().anyMatch(stop -> stop.contains(entity) && !stop.immune(entity));
     }
     public static boolean isTimeStopped(BlockPos pos) {
         var level = Minecraft.getInstance().level;

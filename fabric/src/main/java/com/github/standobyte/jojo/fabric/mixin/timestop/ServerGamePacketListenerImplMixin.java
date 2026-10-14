@@ -25,12 +25,16 @@ public abstract class ServerGamePacketListenerImplMixin {
     public ServerPlayer player;
 
     @Shadow
-    public abstract void teleport(double x, double y, double z, float yRot, float xRot);
+    public abstract void teleport(net.minecraft.world.entity.PositionMoveRotation position,
+                                  java.util.Set<net.minecraft.world.entity.Relative> relatives);
 
     @Inject(method = "handleMovePlayer", at = @At("HEAD"), cancellable = true)
     private void jojoLockFrozenPlayerMovement(ServerboundMovePlayerPacket packet, CallbackInfo ci) {
         if (player != null && player.level().getServer().isSameThread() && TimeStopService.isFrozen(player)) {
-            teleport(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());
+            // The coordinate-only overload zeroes velocity on both ends. A frozen correction
+            // must preserve accumulated hit momentum until the first resumed physics tick.
+            teleport(new net.minecraft.world.entity.PositionMoveRotation(player.position(), player.getDeltaMovement(),
+                    player.getYRot(), player.getXRot()), java.util.Set.of());
             ci.cancel();
         }
     }

@@ -6,6 +6,8 @@ public record StandStats(double power, double maxPower, double speed, double max
                          double effectiveRange, double maxRange) {
     public static final StandStats STAR_PLATINUM = new StandStats(16, 18.5, 16, 19, 16, 20, 20, 2, 10);
 
+    public static final StandStats THE_WORLD = new StandStats(16, 19, 16, 18.5, 16, 20, 12, 5, 10);
+
     public double power(float development) { return power + (maxPower - power) * progress(development); }
     public double speed(float development) { return speed + (maxSpeed - speed) * progress(development); }
     public double durability(float development) { return durability + (maxDurability - durability) * progress(development); }

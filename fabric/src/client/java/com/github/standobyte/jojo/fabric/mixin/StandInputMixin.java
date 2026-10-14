@@ -15,5 +15,6 @@ public abstract class StandInputMixin extends ClientInput {
     @Inject(method = "tick", at = @At("TAIL"))
     private void jojo$anchorInput(CallbackInfo ci) {
         if (StandView.bodyLocked()) { keyPresses = Input.EMPTY; moveVector = Vec2.ZERO; }
+        else moveVector = com.github.standobyte.jojo.fabric.client.StandCamera.movement(moveVector);
     }
 }

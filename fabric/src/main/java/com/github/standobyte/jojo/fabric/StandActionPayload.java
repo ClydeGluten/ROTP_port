@@ -9,7 +9,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
 /** Clients send intent only; ownership, range, damage, stamina and cooldowns are resolved server-side. */
 public record StandActionPayload(Action action) implements CustomPacketPayload {
-    public enum Action { TOGGLE, LIGHT_PUNCH, HEAVY_PUNCH, START_BARRAGE, START_GUARD, STOP_HELD, KEEP_HELD, UPPERCUT, STAR_FINGER, START_INHALE, START_ZOOM, START_CONTROL, STOP_CONTROL, TIME_STOP }
+    public enum Action { TOGGLE, LIGHT_PUNCH, HEAVY_PUNCH, START_BARRAGE, START_GUARD, STOP_HELD, KEEP_HELD, UPPERCUT, STAR_FINGER, START_INHALE, START_ZOOM, START_CONTROL, STOP_CONTROL, TIME_STOP, BLINK, TIME_PUNCH, CANCEL_TIME_CHARGE }
     public static final Type<StandActionPayload> TYPE = new Type<>(RipplesFabric.id("stand_action"));
     public static final StreamCodec<RegistryFriendlyByteBuf, StandActionPayload> CODEC = StreamCodec.of(
             (buffer, payload) -> buffer.writeByte(payload.action.ordinal()),
@@ -40,10 +40,13 @@ public record StandActionPayload(Action action) implements CustomPacketPayload {
                 case STOP_CONTROL -> StandService.stopControl(context.player());
                 case TIME_STOP -> {
                     StandService.stopControl(context.player());
-                    if (!TimeStopService.toggle(context.player()) && (!context.player().getAttachedOrCreate(StandAttachments.PROGRESS).hasStarPlatinum()
-                            || ProgressionService.unlocked(context.player(), 4))) context.player().sendOverlayMessage(net.minecraft.network.chat.Component.translatable(
+                    if (!TimeStopService.toggle(context.player()) && (!context.player().getAttachedOrCreate(StandAttachments.PROGRESS).hasStand()
+                            || ProgressionService.unlocked(context.player(), context.player().getAttachedOrCreate(StandAttachments.PROGRESS).timeStopUnlock()))) context.player().sendOverlayMessage(net.minecraft.network.chat.Component.translatable(
                             "jojo.fabric.time_unavailable", TimeStopService.cooldownRemaining(context.player()) / 20F));
                 }
+                case BLINK -> TheWorldActions.blink(context.player());
+                case TIME_PUNCH -> TheWorldActions.timePunch(context.player());
+                case CANCEL_TIME_CHARGE -> TimeStopService.cancelCharge(context.player());
             }
         });
     }

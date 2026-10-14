@@ -16,13 +16,16 @@ public abstract class StandCameraMixin {
     @Shadow protected abstract void setPosition(Vec3 position);
     @Shadow protected abstract void setRotation(float yaw, float pitch);
 
-    @Inject(method = "alignWithEntity", at = @At("TAIL"))
-    private void jojo$shoulder(float partialTick, CallbackInfo ci) {
-        var pose = StandCamera.shoulder((Camera) (Object) this, partialTick);
-        if (pose != null) {
-            setPosition(pose.position());
-            setRotation(pose.yaw(), pose.pitch());
-        }
+    @Inject(method = "alignWithEntity", at = @At("HEAD"))
+    private void jojo$cameraLifecycle(float partialTick, CallbackInfo ci) {
+        StandCamera.update();
+    }
+
+    // Set the independent angles before vanilla mirrors front view and clips the camera against walls.
+    @Inject(method = "alignWithEntity", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Camera;detached:Z",
+            opcode = org.objectweb.asm.Opcodes.PUTFIELD, shift = At.Shift.AFTER))
+    private void jojo$orbit(float partialTick, CallbackInfo ci) {
+        if (StandCamera.update()) setRotation(StandCamera.yaw(), StandCamera.pitch());
     }
 
     @Inject(method = "calculateFov", at = @At("RETURN"), cancellable = true)

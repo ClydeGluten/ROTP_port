@@ -32,6 +32,12 @@ fabricApi {
     }
 }
 
+// Both GUI scales are tested at this initial size. Resizing a running 26.3 Vulkan
+// window stalls its swapchain on this machine, independently of world/HUD state.
+loom.runs.named('clientGameTest') {
+    programArgs '--width', '1280', '--height', '720'
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${loader_version}"
@@ -62,9 +68,57 @@ processResources {
         def languageFile = new File(destinationDir, 'assets/jojo/lang/en_us.json')
         def translations = new groovy.json.JsonSlurper().parse(languageFile)
         translations.putAll([
+            'key.jojo.fabric.blink': 'Quick move',
+            'key.jojo.fabric.time_punch': 'The World time stop punch',
+            'key.jojo.fabric.select': 'Legacy Stand action modifier (unused)',
+            'key.jojo.fabric.layout': 'Edit Stand action layout',
+            'jojo.fabric.layout.place': 'Place action here',
+            'jojo.fabric.layout.number_move': 'Number keys move the hovered action to that slot.',
+            'jojo.fabric.layout.title': 'Stand Action Layout',
+            'jojo.fabric.layout.attacks': 'Attack row (left click)',
+            'jojo.fabric.layout.abilities': 'Ability row (right click)',
+            'jojo.fabric.layout.reset': 'Reset',
+            'jojo.fabric.layout.help': 'Left-click to move; right-click to enable. Closing saves.',
+            'jojo.fabric.layout.controls': 'Hold attack/ability focus and scroll or press a number to select.',
+            'jojo.fabric.layout.save_error': 'Could not save layout. Check config folder permissions.',
+            'jojo.fabric.hud.hint': '%s + mouse / wheel | %s Layout | %s Progress',
+            'jojo.fabric.hud.cooldown': 'Cooldown: %s s',
+            'jojo.fabric.hud.charging': 'Charging: %s s',
+            'jojo.fabric.hud.recovery': 'Recovery: %s s',
+            'jojo.fabric.hud.resume': '%s s left - resume',
+            'jojo.fabric.hud.summon': '%s Summon first',
+            'jojo.fabric.progress.world_training': 'Training grows 0.1 points per tick of actually stopped time, 4x during a Resolve Burst, up to a 5-second maximum.',
+            'jojo.fabric.action.kick': 'Kick',
+            'jojo.fabric.move.light': 'Punch',
+            'jojo.fabric.move.heavy': 'Heavy Punch',
+            'jojo.fabric.move.barrage': 'Barrage (hold)',
+            'jojo.fabric.move.guard': 'Guard (hold)',
+            'jojo.fabric.move.uppercut': 'Uppercut',
+            'jojo.fabric.move.kick': 'Kick',
+            'jojo.fabric.move.finger': 'Star Finger',
+            'jojo.fabric.move.inhale': 'Inhale (hold)',
+            'jojo.fabric.move.zoom': 'Zoom (hold)',
+            'jojo.fabric.move.control': 'Manual Control (hold)',
+            'jojo.fabric.move.time_stop': 'Time Stop',
+            'jojo.fabric.move.blink': 'Time Skip',
+            'jojo.fabric.progress.blink_input': 'Hold %s with Time Stop selected to use Quick move.',
+            'jojo.fabric.move.time_punch': 'Time Stop Punch',
+            'jojo.fabric.cost.light': '%s stamina',
+            'jojo.fabric.cost.heavy': '%s stamina',
+            'jojo.fabric.cost.uppercut': '%s stamina',
+            'jojo.fabric.cost.kick': '%s stamina',
+            'jojo.fabric.cost.finger': '%s stamina',
+            'jojo.fabric.cost.barrage': '%s stamina / tick',
+            'jojo.fabric.cost.inhale': '%s stamina / tick',
+            'jojo.fabric.cost.guard': 'Stamina per blocked hit',
+            'jojo.fabric.cost.zoom': 'No stamina cost',
+            'jojo.fabric.cost.control': 'No stamina cost',
+            'jojo.fabric.cost.time_stop': '%s + 900 stamina over duration',
+            'jojo.fabric.cost.blink': '%s + travel stamina',
+            'jojo.fabric.cost.time_punch': '%s + travel stamina',
             'jojo.fabric.progress.title': 'Stand Progression',
             'jojo.fabric.progress.close': 'Close',
-            'jojo.fabric.progress.no_stand': 'Obtain Star Platinum to begin progression.',
+            'jojo.fabric.progress.no_stand': 'Awaken a Stand to begin progression.',
             'jojo.fabric.progress.creative_notice': 'Creative mode: all moves and full 5-second Time Stop are available. Earned progress is shown below.',
             'jojo.fabric.progress.level': 'Resolve Level %s',
             'jojo.fabric.progress.resolve': 'Resolve: %s / %s',
@@ -111,7 +165,7 @@ processResources {
             'jojo.fabric.time_controls': '%s Stop / resume time',
             'jojo.fabric.time_unavailable': 'Time stop needs an idle Stand and 225 stamina. Cooldown: %s s',
             'jojo.fabric.time_active': 'Time stopped: %s s',
-            'key.jojo.fabric.uppercut': 'Stand uppercut',
+            'key.jojo.fabric.uppercut': 'Stand uppercut / kick',
             'key.jojo.fabric.finger': 'Star Finger',
             'key.jojo.fabric.inhale': 'Star Platinum inhale (hold)',
             'key.jojo.fabric.zoom': 'Star Platinum zoom (hold)',
@@ -122,10 +176,10 @@ processResources {
             'jojo.fabric.arrow.use': 'Use to pierce yourself and awaken a Stand.',
             'jojo.fabric.arrow.cost': 'XP cost: 30 levels, +5 per previous Arrow awakening.',
             'jojo.fabric.arrow.danger': 'Without enough XP, the virus can kill you. Milk cannot cure it.',
-            'jojo.fabric.arrow.pool': 'Available Stand: Star Platinum.',
+            'jojo.fabric.arrow.pool': 'Available Stands: Star Platinum and The World.',
             'jojo.fabric.arrow.infected': 'The Stand Virus is already active.',
-            'jojo.fabric.arrow.started': 'Stand Virus: %s XP levels needed. Survive to awaken Star Platinum.',
-            'jojo.fabric.arrow.awakened': 'Star Platinum awakened! Summon: %s.',
+            'jojo.fabric.arrow.started': 'Stand Virus: %s XP levels needed. Survive to awaken your Stand.',
+            'jojo.fabric.arrow.awakened': 'Stand awakened! Summon: %s.',
             'jojo.fabric.arrow.progress': 'Stand Virus: %s / %s XP levels paid',
             'jojo.fabric.arrow.remaining': 'Virus expires in %s s. Keep your health and XP up.',
             'jojo.fabric.arrow.requirement': 'Stand Arrow cost: %s XP levels',

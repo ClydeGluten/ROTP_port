@@ -32,6 +32,31 @@ public final class TimeStopService {
     public static final int MIN_CANCEL_COOLDOWN = 20;
 
     private static boolean initialized = false;
+    // Entity-local callbacks mirror EntityUtilCap; health and velocity are never queued or replayed.
+    private static final Map<Entity, List<Runnable>> RESUME_ACTIONS = new java.util.IdentityHashMap<>();
+
+    public static void queueOnResume(Entity entity, Runnable action) {
+        if (entity == null || entity.isRemoved()) return;
+        if (isFrozen(entity)) RESUME_ACTIONS.computeIfAbsent(entity, ignored -> new ArrayList<>()).add(action);
+        else action.run();
+    }
+
+    static int pendingResumeActions(Entity entity) {
+        return RESUME_ACTIONS.getOrDefault(entity, List.of()).size();
+    }
+
+    private static void releaseThawedActions() {
+        List<Runnable> ready = new ArrayList<>();
+        RESUME_ACTIONS.entrySet().removeIf(entry -> {
+            Entity entity = entry.getKey();
+            if (entity.isRemoved() || !(entity.level() instanceof ServerLevel level)
+                    || level.getEntity(entity.getUUID()) != entity) return true;
+            if (isFrozen(entity)) return false;
+            ready.addAll(entry.getValue());
+            return true;
+        });
+        ready.forEach(Runnable::run);
+    }
 
     private static final class ChargeState {
         final UUID playerUuid;
@@ -45,7 +70,7 @@ public final class TimeStopService {
             this.dimension = player.level().dimension();
             this.chunkPos = player.chunkPosition();
             this.blockPos = player.blockPosition();
-            this.ticksRemaining = CHARGE_TICKS;
+            this.ticksRemaining = player.getAttachedOrCreate(StandAttachments.PROGRESS).hasTheWorld() ? 30 : CHARGE_TICKS;
         }
     }
 
@@ -57,7 +82,9 @@ public final class TimeStopService {
         final BlockPos activationBlockPos;
         int ticksRemaining;
         int elapsedTicks;
+        boolean manuallyShortened;
         final int durationTicks;
+        final String standName;
 
         ActiveTimeStop(ServerPlayer player) {
             this.playerUuid = player.getUUID();
@@ -65,6 +92,7 @@ public final class TimeStopService {
             this.dimension = player.level().dimension();
             this.activationChunk = player.chunkPosition();
             this.activationBlockPos = player.blockPosition();
+            this.standName = player.getAttachedOrCreate(StandAttachments.PROGRESS).hasTheWorld() ? "the_world" : "star_platinum";
             this.durationTicks = ProgressionService.timeStopTicks(player);
             this.ticksRemaining = durationTicks;
             this.elapsedTicks = 0;
@@ -74,6 +102,7 @@ public final class TimeStopService {
     private static final Map<UUID, ChargeState> CHARGING = new HashMap<>();
     private static final Map<UUID, ActiveTimeStop> ACTIVE_STOPS = new HashMap<>();
     private static final Map<UUID, Integer> COOLDOWNS = new HashMap<>();
+    private static final Map<UUID, Integer> COOLDOWN_DURATIONS = new HashMap<>();
 
     public static void initialize() {
         if (initialized) return;
@@ -89,19 +118,22 @@ public final class TimeStopService {
             syncPlayer(player);
         });
 
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+        // Fabric may fire disconnect from Netty's channelInactive; never mutate world state there.
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> server.execute(() -> {
             ServerPlayer player = handler.player;
             UUID uuid = player.getUUID();
             if (CHARGING.containsKey(uuid) || ACTIVE_STOPS.containsKey(uuid)) {
                 cancel(player);
             }
             // Retain cooldown while disconnected; reconnecting cannot bypass it.
-        });
+        }));
 
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+            RESUME_ACTIONS.clear();
             CHARGING.clear();
             ACTIVE_STOPS.clear();
             COOLDOWNS.clear();
+            COOLDOWN_DURATIONS.clear();
         });
     }
 
@@ -118,7 +150,13 @@ public final class TimeStopService {
         UUID uuid = player.getUUID();
 
         if (isActive(player)) {
-            cancel(player);
+            ActiveTimeStop stop = ACTIVE_STOPS.get(uuid);
+            if (!stop.manuallyShortened && stop.ticksRemaining > 11) {
+                stop.manuallyShortened = true;
+                stop.ticksRemaining = 11;
+                broadcastPayload(player.level().getServer(), stop.dimension, new TimeStopPayload(stop.activationBlockPos,
+                        stop.dimension.identifier(), stop.playerId, stop.playerUuid, TimeStopPayload.State.SYNC, 11));
+            } else cancel(player);
             return true;
         }
 
@@ -130,10 +168,11 @@ public final class TimeStopService {
         if (!player.isAlive() || player.isSpectator()) return false;
         if (isFrozen(player)) return false;
         if (cooldownRemaining(player) > 0) return false;
+        if (AbilityCooldowns.remaining(player, 11) > 0) return false;
 
         StandProgress progress = player.getAttachedOrCreate(StandAttachments.PROGRESS);
-        if (!progress.hasStarPlatinum()) return false;
-        if (!ProgressionService.require(player, 4, "key.jojo.fabric.time_stop")) return false;
+        if (!progress.hasStand()) return false;
+        if (!ProgressionService.require(player, progress.timeStopUnlock(), "key.jojo.fabric.time_stop")) return false;
 
         StarPlatinumEntity stand = StandService.current(player);
         if (stand == null || stand.isRemoved() || !stand.allowsStaminaRegen()) return false;
@@ -166,9 +205,32 @@ public final class TimeStopService {
         return stop != null ? stop.ticksRemaining : 0;
     }
 
+    private static void setCooldown(UUID uuid, int ticks) {
+        COOLDOWNS.put(uuid, ticks);
+        COOLDOWN_DURATIONS.put(uuid, ticks);
+    }
+
+    public static int cooldownDuration(ServerPlayer player) {
+        return cooldownRemaining(player) > 0 ? COOLDOWN_DURATIONS.getOrDefault(player.getUUID(), 0) : 0;
+    }
+
     public static int cooldownRemaining(ServerPlayer player) {
         if (player == null) return 0;
         return COOLDOWNS.getOrDefault(player.getUUID(), 0);
+    }
+
+    public static void setCooldown(ServerPlayer player, int ticks) {
+        if (player == null || ticks <= 0) return;
+        UUID uuid = player.getUUID();
+        int current = COOLDOWNS.getOrDefault(uuid, 0);
+        if (ticks > current) {
+            setCooldown(uuid, ticks);
+        }
+    }
+
+    /** Releasing an original HUD hold cancels only charging, never an already active Time Stop. */
+    public static void cancelCharge(ServerPlayer player) {
+        if (player != null && CHARGING.containsKey(player.getUUID())) cancel(player);
     }
 
     public static void cancel(ServerPlayer player) {
@@ -177,16 +239,23 @@ public final class TimeStopService {
 
         if (CHARGING.containsKey(uuid)) {
             CHARGING.remove(uuid);
-            COOLDOWNS.put(uuid, MIN_CANCEL_COOLDOWN);
+            setCooldown(uuid, MIN_CANCEL_COOLDOWN);
+            AbilityCooldowns.start(player, 11, MIN_CANCEL_COOLDOWN / 6);
             return;
         }
 
         ActiveTimeStop stop = ACTIVE_STOPS.remove(uuid);
         if (stop != null) {
             int cooldown = cooldownFor(player, stop.elapsedTicks);
-            COOLDOWNS.put(uuid, cooldown);
+            setCooldown(uuid, cooldown);
+            AbilityCooldowns.start(player, 11, cooldown / 6);
             resumeTime(stop, player.level().getServer());
         }
+    }
+
+    public static int durationTicks(ServerPlayer player) {
+        ActiveTimeStop stop = ACTIVE_STOPS.get(player.getUUID());
+        return stop == null ? 0 : stop.durationTicks;
     }
 
     public static boolean isFrozen(Entity entity) {
@@ -216,7 +285,7 @@ public final class TimeStopService {
             int dz = Math.abs(entityChunk.z() - stop.activationChunk.z());
             if (dx <= CHUNK_RANGE && dz <= CHUNK_RANGE) {
                 if (level.hasChunk(entityChunk.x(), entityChunk.z())) {
-                    return true;
+                    return !(entity instanceof KnifeEntity knife) || knife.getTimeStopFlightTicks() == 0;
                 }
             }
         }
@@ -273,6 +342,7 @@ public final class TimeStopService {
 
         tickActive(server);
         tickCharging(server);
+        releaseThawedActions();
     }
 
     private static void tickCharging(MinecraftServer server) {
@@ -282,7 +352,7 @@ public final class TimeStopService {
         for (ChargeState charge : CHARGING.values()) {
             ServerPlayer player = server.getPlayerList().getPlayer(charge.playerUuid);
             if (player == null || !player.isAlive() || player.isSpectator() || !player.level().dimension().equals(charge.dimension)
-                    || isFrozen(player) || !player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStarPlatinum()) {
+                    || isFrozen(player) || !player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStand()) {
                 toCancel.add(charge.playerUuid);
                 continue;
             }
@@ -300,25 +370,29 @@ public final class TimeStopService {
 
         for (UUID uuid : toCancel) {
             CHARGING.remove(uuid);
-            COOLDOWNS.put(uuid, MIN_CANCEL_COOLDOWN);
+            setCooldown(uuid, MIN_CANCEL_COOLDOWN);
+            ServerPlayer player = server.getPlayerList().getPlayer(uuid);
+            if (player != null) {
+                AbilityCooldowns.start(player, 11, MIN_CANCEL_COOLDOWN / 6);
+            }
         }
 
         for (UUID uuid : toComplete) {
             CHARGING.remove(uuid);
             ServerPlayer player = server.getPlayerList().getPlayer(uuid);
             if (player == null || !player.isAlive() || player.isSpectator()) {
-                COOLDOWNS.put(uuid, MIN_CANCEL_COOLDOWN);
+                setCooldown(uuid, MIN_CANCEL_COOLDOWN);
                 continue;
             }
             StarPlatinumEntity stand = StandService.current(player);
             if (stand == null || stand.isRemoved()) {
-                COOLDOWNS.put(uuid, MIN_CANCEL_COOLDOWN);
+                setCooldown(uuid, MIN_CANCEL_COOLDOWN);
                 continue;
             }
             StandProgress progress = player.getAttachedOrCreate(StandAttachments.PROGRESS);
-            if (isFrozen(player) || isAreaOverlapping(player.level(), player.chunkPosition()) || !progress.hasStarPlatinum()
+            if (isFrozen(player) || isAreaOverlapping(player.level(), player.chunkPosition()) || !progress.hasStand()
                     || (!player.isCreative() && progress.stamina() < STAMINA_UPFRONT)) {
-                COOLDOWNS.put(uuid, MIN_CANCEL_COOLDOWN);
+                setCooldown(uuid, MIN_CANCEL_COOLDOWN);
                 continue;
             }
 
@@ -373,6 +447,8 @@ public final class TimeStopService {
 
             stop.elapsedTicks++;
             stop.ticksRemaining--;
+            // TimeStopInstance.tickSounds starts the original resume cue ten ticks before thaw.
+            if (stop.ticksRemaining == 10) stand.playOriginal("star_platinum_time_resume");
 
             if (stop.ticksRemaining <= 0) {
                 toEnd.add(stop.playerUuid);
@@ -384,8 +460,12 @@ public final class TimeStopService {
             ActiveTimeStop stop = ACTIVE_STOPS.remove(uuid);
             if (stop == null) continue;
             boolean cancelled = cancelledFlags.getOrDefault(uuid, false);
-            int cooldown = cooldownFor(server.getPlayerList().getPlayer(uuid), stop.elapsedTicks);
-            COOLDOWNS.put(uuid, cooldown);
+            ServerPlayer p = server.getPlayerList().getPlayer(uuid);
+            int cooldown = cooldownFor(p, stop.elapsedTicks);
+            setCooldown(uuid, cooldown);
+            if (p != null) {
+                AbilityCooldowns.start(p, 11, cooldown / 6);
+            }
             resumeTime(stop, server);
         }
     }
@@ -399,14 +479,6 @@ public final class TimeStopService {
         if (server == null) return;
         ServerPlayer player = server.getPlayerList().getPlayer(stop.playerUuid);
         if (player != null) ProgressionService.trainTimeStop(player, stop.elapsedTicks);
-        StarPlatinumEntity stand = player != null ? StandService.current(player) : null;
-        if (stand != null && !stand.isRemoved()) {
-            stand.playOriginal("star_platinum_time_resume");
-        } else if (server.getLevel(stop.dimension) != null) {
-            server.getLevel(stop.dimension).playSound(null, stop.activationBlockPos.getX(), stop.activationBlockPos.getY(), stop.activationBlockPos.getZ(),
-                    JojoSounds.get("star_platinum_time_resume"), SoundSource.PLAYERS, 1.0F, 1.0F);
-        }
-
         // Tick cancellation preserves momentum. Keep any new impact impulse for the resumed tick.
 
         TimeStopPayload payload = new TimeStopPayload(
@@ -418,6 +490,7 @@ public final class TimeStopService {
                 0
         );
         broadcastPayload(server, stop.dimension, payload);
+        releaseThawedActions();
     }
 
     private static void broadcastPayload(MinecraftServer server, ResourceKey<Level> dimension, TimeStopPayload payload) {

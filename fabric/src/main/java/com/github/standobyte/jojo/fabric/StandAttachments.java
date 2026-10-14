@@ -88,6 +88,22 @@ public final class StandAttachments {
             .syncWith(RESOLVE_STREAM_CODEC, AttachmentSyncPredicate.targetOnly())
             .buildAndRegister(RipplesFabric.id("stand_resolve"));
 
+    public static final AttachmentType<ResolveProgress> THE_WORLD_RESOLVE = AttachmentRegistry.<ResolveProgress>builder()
+            .initializer(() -> ResolveProgress.EMPTY).persistent(RESOLVE_CODEC).copyOnDeath()
+            .syncWith(RESOLVE_STREAM_CODEC, AttachmentSyncPredicate.targetOnly())
+            .buildAndRegister(RipplesFabric.id("the_world_resolve"));
+
+    public static AttachmentType<ResolveProgress> resolveType(net.minecraft.world.entity.player.Player player) {
+        return player.getAttachedOrCreate(PROGRESS).hasTheWorld() ? THE_WORLD_RESOLVE : RESOLVE;
+    }
+    public static ResolveProgress resolve(net.minecraft.world.entity.player.Player player) {
+        return player.getAttachedOrCreate(resolveType(player));
+    }
+    public static final AttachmentType<StandHudState> HUD = AttachmentRegistry.<StandHudState>builder()
+            .initializer(() -> StandHudState.EMPTY)
+            .syncWith(StandHudState.STREAM_CODEC, AttachmentSyncPredicate.targetOnly())
+            .buildAndRegister(RipplesFabric.id("stand_hud"));
+
     public static void initialize() { }
     private StandAttachments() { }
 }

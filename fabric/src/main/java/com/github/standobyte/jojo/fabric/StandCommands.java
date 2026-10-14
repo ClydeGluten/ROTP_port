@@ -18,6 +18,12 @@ public final class StandCommands {
                                             players.forEach(StandService::grant);
                                             context.getSource().sendSuccess(() -> Component.literal("Granted Star Platinum to " + players.size() + " player(s)."), true);
                                             return players.size();
+                                        }))
+                                        .then(literal("the_world").executes(context -> {
+                                            var players = EntityArgument.getPlayers(context, "players");
+                                            players.forEach(player -> StandService.grant(player, com.github.standobyte.jojo.core.StandProgress.THE_WORLD));
+                                            context.getSource().sendSuccess(() -> Component.literal("Granted The World to " + players.size() + " player(s)."), true);
+                                            return players.size();
                                         }))))
                         .then(literal("clear").requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
                                 .then(argument("players", EntityArgument.players()).executes(context -> {

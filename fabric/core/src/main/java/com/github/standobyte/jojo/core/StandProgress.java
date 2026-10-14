@@ -5,6 +5,7 @@ import java.util.Objects;
 /** Persistent player state. Summoned entities and attack timers are deliberately transient. */
 public record StandProgress(String standId, float stamina, float development, boolean hadStand) {
     public static final String STAR_PLATINUM = "jojo:star_platinum";
+    public static final String THE_WORLD = "jojo:the_world";
     public static final StandProgress EMPTY = new StandProgress("", 0, 0, false);
 
     public StandProgress {
@@ -16,7 +17,17 @@ public record StandProgress(String standId, float stamina, float development, bo
     }
 
     public boolean hasStarPlatinum() { return STAR_PLATINUM.equals(standId); }
-    public float maxStamina() { return hasStarPlatinum() ? StandStats.STAR_PLATINUM.maxStamina(development) : 0; }
+    public boolean hasTheWorld() { return THE_WORLD.equals(standId); }
+    public boolean hasStand() { return hasStarPlatinum() || hasTheWorld(); }
+    public StandStats stats() { return hasTheWorld() ? StandStats.THE_WORLD : StandStats.STAR_PLATINUM; }
+    public int timeStopUnlock() { return hasTheWorld() ? 2 : 4; }
+    public float maxStamina() { return hasStand() ? stats().maxStamina(development) : 0; }
+
+    public static StandProgress grant(String standId, boolean creative) {
+        var empty = new StandProgress(standId, 0, 0, true);
+        if (!empty.hasStand()) throw new IllegalArgumentException("Unknown playable Stand: " + standId);
+        return creative ? empty.withStamina(empty.maxStamina()) : empty;
+    }
 
     public static StandProgress grantStarPlatinum(boolean creative) {
         return new StandProgress(STAR_PLATINUM, creative ? StandStats.STAR_PLATINUM.maxStamina(0) : 0, 0, true);
@@ -28,11 +39,11 @@ public record StandProgress(String standId, float stamina, float development, bo
     }
 
     public StandProgress regenerate(boolean summoned, boolean actionAllowsRegen, int foodLevel, boolean creative) {
-        if (!hasStarPlatinum()) return this;
+        if (!hasStand()) return this;
         if (creative) return withStamina(maxStamina());
         float gain = summoned ? (actionAllowsRegen ? 1.5F : 0) : 3F;
         if (foodLevel > 17) gain *= 1.25F;
-        gain *= StandStatFormulas.getStaminaMultiplier(StandStats.STAR_PLATINUM.durability(development));
+        gain *= StandStatFormulas.getStaminaMultiplier(stats().durability(development));
         float next = Math.clamp(stamina + gain, 0, maxStamina());
         return next == stamina ? this : withStamina(next);
     }

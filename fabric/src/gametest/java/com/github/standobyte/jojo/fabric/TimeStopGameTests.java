@@ -110,7 +110,10 @@ public final class TimeStopGameTests {
             test.assertTrue(cow.getHealth() < health, "Damage actually changes frozen target health");
         });
         test.runAtTickTime(75, () -> {
-            test.assertTrue(TimeStopService.toggle(player), "Early resume succeeds");
+            test.assertTrue(TimeStopService.toggle(player), "First resume click shortens the stop");
+            test.assertValueEqual(TimeStopService.ticksRemaining(player), 11, "Original first click leaves eleven ticks");
+            test.assertTrue(TimeStopService.isFrozen(cow), "First click keeps target frozen during the resume cue");
+            test.assertTrue(TimeStopService.toggle(player), "Second resume click ends immediately");
             test.assertFalse(TimeStopService.isFrozen(cow), "Resume removes entity freeze");
             test.assertTrue(TimeStopService.cooldownRemaining(player) >= 20, "Resume applies cooldown");
         });

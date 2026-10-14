@@ -10,25 +10,32 @@ import net.minecraft.world.level.GameType;
 
 /** Exercises real key input, C2S packets, entity/attachment sync, rendering and a saved-world reopen. */
 public final class StandClientGameTest implements FabricClientGameTest {
-    /** Longest exact-purple run measures the rendered bar, independent of window size and GUI scale. */
+    /** Locate the original gradient edge; an empty red warning flash must not count as stamina. */
     private static int staminaPixels(ClientGameTestContext context, java.nio.file.Path screenshot) {
         try {
             var image = javax.imageio.ImageIO.read(screenshot.toFile());
             int[] gui = context.computeOnClient(client -> new int[] {client.getWindow().getGuiScale(), client.getWindow().getGuiScaledHeight()});
             int scale = gui[0];
-            int longest = 0;
-            for (int y = (gui[1] - 104) * scale; y < Math.min(image.getHeight(), (gui[1] - 99) * scale); y++) {
-                int run = 0;
-                for (int x = 11 * scale; x < Math.min(image.getWidth(), 129 * scale); x++) {
-                    run = (image.getRGB(x, y) & 0xFFFFFF) == 0x8E45FF ? run + 1 : 0;
-                    longest = Math.max(longest, run);
+            int widest = 0;
+            for (int y = 5 * scale; y < Math.min(image.getHeight(), 11 * scale); y++) {
+                int filled = 0;
+                for (int x = 18 * scale; x < Math.min(image.getWidth(), 218 * scale); x++) {
+                    int rgb = image.getRGB(x, y), g = rgb >> 8 & 255, b = rgb & 255;
+                    // Even at the red pulse's 75% peak, the yellow/green fill remains above blue.
+                    if (g > 10 && g - b > 15) filled = x - 18 * scale + 1;
                 }
+                widest = Math.max(widest, filled);
             }
-            return longest;
+            return Math.round(widest / (float) scale);
         } catch (java.io.IOException error) { throw new AssertionError("Cannot read HUD screenshot", error); }
     }
 
     @Override public void runTest(ClientGameTestContext context) {
+        context.runOnClient(c -> {
+            net.minecraft.client.KeyMapping.get("key.jojo.fabric.heavy").setKey(InputConstants.Type.KEYBOARD.getOrCreate(InputConstants.KEY_F6));
+            net.minecraft.client.KeyMapping.get("key.jojo.fabric.uppercut").setKey(InputConstants.Type.KEYBOARD.getOrCreate(InputConstants.KEY_F7));
+            net.minecraft.client.KeyMapping.resetMapping();
+        });
         TestWorldSave save;
         try (var world = context.worldBuilder().create()) {
             world.getConnection().waitForChunksRender();
@@ -39,7 +46,7 @@ public final class StandClientGameTest implements FabricClientGameTest {
                 StandService.grant(player);
             });
             context.waitFor(client -> client.player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStarPlatinum());
-            context.getInput().pressKey(InputConstants.KEY_G);
+            context.getInput().pressKey(net.minecraft.client.KeyMapping.get("key.jojo.fabric.summon"));
             world.getServer().waitFor(server -> StandService.current(server.getPlayerList().getPlayer(playerId)) != null);
             int entityId = world.getServer().computeOnServer(server -> StandService.current(server.getPlayerList().getPlayer(playerId)).getId());
             context.waitFor(client -> client.level.getEntity(entityId) instanceof StarPlatinumEntity);
@@ -121,7 +128,7 @@ public final class StandClientGameTest implements FabricClientGameTest {
             }
             context.waitFor(client -> ((StarPlatinumEntity) client.level.getEntity(entityId)).finisherCharge() >= 0.5F);
             context.takeScreenshot("star-platinum-finisher-ready");
-            context.getInput().pressKey(InputConstants.KEY_V);
+            context.getInput().pressKey(net.minecraft.client.KeyMapping.get("key.jojo.fabric.heavy"));
             world.getServer().waitFor(server -> {
                 var stand = StandService.current(server.getPlayerList().getPlayer(playerId));
                 return stand.heavyAttack() && stand.actionPhase() != 0;
@@ -151,7 +158,7 @@ public final class StandClientGameTest implements FabricClientGameTest {
             context.takeScreenshot("star-platinum-guard");
             context.getInput().releaseKey(InputConstants.KEY_X);
             world.getServer().waitFor(server -> StandService.current(server.getPlayerList().getPlayer(playerId)).actionPhase() == 0);
-            context.getInput().pressKey(InputConstants.KEY_B);
+            context.getInput().pressKey(net.minecraft.client.KeyMapping.get("key.jojo.fabric.uppercut"));
             world.getServer().waitFor(server -> StandService.current(server.getPlayerList().getPlayer(playerId)).abilityKind() == 1);
             context.waitTicks(7);
             context.takeScreenshot("star-platinum-uppercut");
@@ -179,7 +186,7 @@ public final class StandClientGameTest implements FabricClientGameTest {
                 if (com.github.standobyte.jojo.fabric.client.StandView.zoom() != 1) throw new AssertionError("Zoom did not restore on release");
                 client.options.setCameraType(CameraType.FIRST_PERSON);
             });
-            context.getInput().holdKey(InputConstants.KEY_H);
+            context.getInput().holdKey(net.minecraft.client.KeyMapping.get("key.jojo.fabric.control"));
             world.getServer().waitFor(server -> StandService.current(server.getPlayerList().getPlayer(playerId)).manuallyControlled());
             context.waitFor(client -> client.getCameraEntity() instanceof StarPlatinumEntity);
             var ownerPosition = world.getServer().computeOnServer(server -> server.getPlayerList().getPlayer(playerId).position());
@@ -192,7 +199,7 @@ public final class StandClientGameTest implements FabricClientGameTest {
                 if (StandService.current(player).position().distanceTo(ownerPosition) < 3) throw new AssertionError("Manual control failed to move the Stand");
             });
             context.takeScreenshot("star-platinum-manual-control");
-            context.getInput().releaseKey(InputConstants.KEY_H);
+            context.getInput().releaseKey(net.minecraft.client.KeyMapping.get("key.jojo.fabric.control"));
             world.getServer().waitFor(server -> !StandService.current(server.getPlayerList().getPlayer(playerId)).manuallyControlled());
             context.waitFor(client -> client.getCameraEntity() == client.player);
             int frozenTargetId = world.getServer().computeOnServer(server -> {
@@ -224,7 +231,7 @@ public final class StandClientGameTest implements FabricClientGameTest {
                 if (player.level().getEntity(frozenTargetId).tickCount <= frozenTick) throw new AssertionError("Frozen mob did not resume");
                 if (TimeStopService.cooldownRemaining(player) != 0) throw new AssertionError("Original Creative Time Stop should have no cooldown");
             });
-            context.getInput().pressKey(InputConstants.KEY_G);
+            context.getInput().pressKey(net.minecraft.client.KeyMapping.get("key.jojo.fabric.summon"));
             world.getServer().waitFor(server -> StandService.current(server.getPlayerList().getPlayer(playerId)) == null);
             context.waitFor(client -> client.level.getEntity(entityId) == null);
             world.getServer().runOnServer(server -> {
@@ -264,7 +271,7 @@ public final class StandClientGameTest implements FabricClientGameTest {
                     StandService.grant(player);
                 });
                 context.waitFor(client -> client.player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStarPlatinum());
-                context.getInput().pressKey(InputConstants.KEY_G);
+                context.getInput().pressKey(net.minecraft.client.KeyMapping.get("key.jojo.fabric.summon"));
                 server.waitFor(minecraft -> StandService.current(minecraft.getPlayerList().getPlayer(playerId)) != null);
                 int entityId = server.computeOnServer(minecraft -> StandService.current(minecraft.getPlayerList().getPlayer(playerId)).getId());
                 context.waitFor(client -> client.level.getEntity(entityId) instanceof StarPlatinumEntity);
@@ -276,6 +283,8 @@ public final class StandClientGameTest implements FabricClientGameTest {
                     player.setAttached(StandAttachments.PROGRESS, player.getAttachedOrCreate(StandAttachments.PROGRESS).withStamina(1000));
                 });
                 context.waitFor(client -> !client.player.isCreative() && client.player.getAttachedOrCreate(StandAttachments.PROGRESS).stamina() == 1000);
+                // The insecure-chat notification overlaps the top-left bar at GUI scale 3.
+                context.runOnClient(client -> client.gui.toastManager().clear());
                 context.waitTicks(2);
                 int halfBar = staminaPixels(context, context.takeScreenshot("stamina-dedicated-half"));
                 server.runOnServer(minecraft -> {
@@ -290,7 +299,7 @@ public final class StandClientGameTest implements FabricClientGameTest {
                 server.waitFor(minecraft -> StandService.current(minecraft.getPlayerList().getPlayer(playerId)).actionPhase() == 0);
                 server.runOnServer(minecraft -> minecraft.getPlayerList().getPlayer(playerId).setGameMode(GameType.CREATIVE));
                 context.waitFor(client -> client.player.isCreative());
-                context.getInput().pressKey(InputConstants.KEY_V);
+                context.getInput().pressKey(net.minecraft.client.KeyMapping.get("key.jojo.fabric.heavy"));
                 server.waitFor(minecraft -> StandService.current(minecraft.getPlayerList().getPlayer(playerId)).actionPhase() != 0);
                 context.waitTicks(5);
                 context.takeScreenshot("star-platinum-dedicated-server");
@@ -309,13 +318,13 @@ public final class StandClientGameTest implements FabricClientGameTest {
                 server.waitFor(minecraft -> StandService.current(minecraft.getPlayerList().getPlayer(playerId)).actionPhase() == 0);
                 context.getInput().releaseKey(InputConstants.KEY_X);
                 context.getInput().pressKey(InputConstants.KEY_ESCAPE);
-                context.getInput().holdKey(InputConstants.KEY_H);
+                context.getInput().holdKey(net.minecraft.client.KeyMapping.get("key.jojo.fabric.control"));
                 server.waitFor(minecraft -> StandService.current(minecraft.getPlayerList().getPlayer(playerId)).manuallyControlled());
                 context.waitFor(client -> client.getCameraEntity() instanceof StarPlatinumEntity);
                 context.getInput().pressKey(InputConstants.KEY_ESCAPE);
                 server.waitFor(minecraft -> !StandService.current(minecraft.getPlayerList().getPlayer(playerId)).manuallyControlled());
                 context.waitFor(client -> client.getCameraEntity() == client.player);
-                context.getInput().releaseKey(InputConstants.KEY_H);
+                context.getInput().releaseKey(net.minecraft.client.KeyMapping.get("key.jojo.fabric.control"));
                 context.getInput().pressKey(InputConstants.KEY_ESCAPE);
                 // Exercise the frozen-player client through actual S2C messages, including independent regions.
                 var frozenCaster = java.util.UUID.randomUUID();
@@ -360,11 +369,14 @@ public final class StandClientGameTest implements FabricClientGameTest {
                 context.takeScreenshot("star-platinum-dedicated-time-stop");
                 // Disconnect during active time stop must restore the server world.
             }
+            // Closing the client socket and processing its server disconnect are asynchronous.
+            server.waitFor(minecraft -> minecraft.getPlayerList().getPlayerCount() == 0);
             server.runOnServer(minecraft -> {
                 for (var level : minecraft.getAllLevels()) {
                     for (var entity : level.getAllEntities()) {
                         if (entity instanceof StarPlatinumEntity && !entity.isRemoved()) {
-                            throw new AssertionError("Disconnect left an orphan manifestation");
+                            throw new AssertionError("Disconnect left an orphan manifestation: id=" + entity.getId()
+                                    + ", owner=" + ((StarPlatinumEntity) entity).owner() + ", ownerId=" + ((StarPlatinumEntity) entity).ownerId());
                         }
                     }
                 }

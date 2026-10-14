@@ -2,7 +2,31 @@
   "required": true,
   "package": "com.github.standobyte.jojo.fabric.mixin",
   "compatibilityLevel": "JAVA_25",
-  "mixins": ["PlayerGuardMixin", "ResolveDamageMixin", "ManualControlMovementMixin", "StandVirusMilkMixin"],
-  "client": ["StandCameraMixin", "StandInputMixin", "StandSprintMixin"],
-  "injectors": {"defaultRequire": 1}
+  "mixins": [
+    "TimeSkipMobAccessor",
+    "StandDamageAccess",
+    "PlayerGuardMixin",
+    "ResolveDamageMixin",
+    "ManualControlMovementMixin",
+    "StandVirusMilkMixin",
+    "KnifeArrowAccess",
+    "KnifeAttributesMixin",
+    "KnifeLivingEntityMixin"
+  ],
+  "client": [
+    "StandCameraMixin",
+    "OrbitMouseMixin",
+    "OrbitInteractionMixin",
+    "StandRemoteKeyMixin",
+    "StandInputMixin",
+    "StandSprintMixin",
+    "StandSelectionInputMixin",
+    "StandSelectionReleaseMixin",
+    "StandSelectionScrollMixin",
+    "KnifeModelPropertiesMixin",
+    "KnifeAvatarRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
 }

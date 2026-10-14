@@ -57,6 +57,13 @@ public final class HeldCombat {
         guardBreak = guardBreakDuration = duration;
     }
 
+    /** An original instant-time punch can replace another action's recovery, but never guard-break stun. */
+    public boolean cancelRecovery() {
+        if (mode != Mode.NONE || guardBreak > 0 || recovery <= 0) return false;
+        recovery = 0;
+        return true;
+    }
+
     public Mode mode() { return mode; }
     public int elapsed() { return elapsed; }
     public int limit() { return limit; }

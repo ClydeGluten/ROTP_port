@@ -22,22 +22,39 @@ public final class RipplesFabric implements ModInitializer {
                     .eyeHeight(1.9F).clientTrackingRange(10).updateInterval(1).noSave().noSummon().fireImmune()
                     .build(ResourceKey.create(Registries.ENTITY_TYPE, id("star_platinum"))));
 
+    public static final EntityType<StarPlatinumEntity> THE_WORLD = Registry.register(
+            BuiltInRegistries.ENTITY_TYPE, id("the_world"),
+            EntityType.Builder.of(StarPlatinumEntity::new, MobCategory.MISC).sized(0.7F, 2.1F)
+                    .eyeHeight(1.9F).clientTrackingRange(10).updateInterval(1).noSave().noSummon().fireImmune()
+                    .build(ResourceKey.create(Registries.ENTITY_TYPE, id("the_world"))));
+
+    public static final EntityType<KnifeEntity> KNIFE = Registry.register(
+            BuiltInRegistries.ENTITY_TYPE, id("knife"),
+            EntityType.Builder.<KnifeEntity>of(KnifeEntity::new, MobCategory.MISC).sized(0.25F, 0.25F)
+                    .clientTrackingRange(4).updateInterval(20)
+                    .build(ResourceKey.create(Registries.ENTITY_TYPE, id("knife"))));
+
     public static Identifier id(String path) { return Identifier.fromNamespaceAndPath(MOD_ID, path); }
 
     @Override
     public void onInitialize() {
         FabricDefaultAttributeRegistry.register(STAR_PLATINUM, Mob.createMobAttributes());
+        FabricDefaultAttributeRegistry.register(THE_WORLD, Mob.createMobAttributes());
         StandAttachments.initialize();
         StandItems.initialize();
         StandArrowLoot.initialize(StandItems.STAND_ARROW_BEETLE);
         StandArrowService.initialize();
         JojoSounds.initialize();
+        KnifeService.initialize();
+        StuckKnives.initialize();
         StandService.initialize();
         ProgressionService.initialize();
         TimeStopService.initialize();
+        StandTimeSkipPayload.initialize();
         StandActionPayload.initialize();
         StandControlPayload.initialize();
         StandCommands.initialize();
+        StandHudState.initialize();
         LOGGER.info("Ripples of the Past Fabric development port loaded; feature parity is incomplete.");
     }
 }

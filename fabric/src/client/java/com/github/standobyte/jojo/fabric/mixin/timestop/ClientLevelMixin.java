@@ -18,6 +18,8 @@ public abstract class ClientLevelMixin {
 
     @Inject(method = "tickNonPassenger", at = @At("HEAD"), cancellable = true)
     private void jojoCancelClientTickNonPassenger(Entity entity, CallbackInfo ci) {
+        if (entity instanceof com.github.standobyte.jojo.fabric.KnifeEntity knife)
+            knife.setTimeStopped(TimeStopClient.isTimeStopped(entity.blockPosition()));
         if (TimeStopClient.isFrozen(entity)) {
             for (Entity passenger : entity.getPassengers()) {
                 tickPassenger(entity, passenger);
@@ -28,6 +30,8 @@ public abstract class ClientLevelMixin {
 
     @Inject(method = "tickPassenger", at = @At("HEAD"), cancellable = true)
     private void jojoCancelClientTickPassenger(Entity vehicle, Entity passenger, CallbackInfo ci) {
+        if (passenger instanceof com.github.standobyte.jojo.fabric.KnifeEntity knife)
+            knife.setTimeStopped(TimeStopClient.isTimeStopped(passenger.blockPosition()));
         if (TimeStopClient.isFrozen(passenger)) {
             ci.cancel();
         }

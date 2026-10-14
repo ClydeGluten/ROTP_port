@@ -39,12 +39,12 @@ public final class ProgressionService {
         });
     }
 
-    public static ResolveProgress state(ServerPlayer player) { return player.getAttachedOrCreate(StandAttachments.RESOLVE); }
-    private static boolean ownsStand(ServerPlayer player) { return player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStarPlatinum(); }
+    public static ResolveProgress state(ServerPlayer player) { return StandAttachments.resolve(player); }
+    private static boolean ownsStand(ServerPlayer player) { return player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStand(); }
 
     /** Prior drafts saved development but had no Resolve attachment. Preserve that earned value and ownership. */
     private static void migrate(ServerPlayer player) {
-        if (ownsStand(player) && player.getAttached(StandAttachments.RESOLVE) == null) {
+        if (ownsStand(player) && player.getAttached(StandAttachments.resolveType(player)) == null) {
             int level = Math.clamp(Math.round(player.getAttachedOrCreate(StandAttachments.PROGRESS).development() * 4), 0, 4);
             update(player, ResolveProgress.EMPTY.withLevel(level));
         }
@@ -80,14 +80,14 @@ public final class ProgressionService {
 
     private static void applyDevelopment(ServerPlayer player, ResolveProgress next) {
         StandProgress power = player.getAttachedOrCreate(StandAttachments.PROGRESS);
-        if (!power.hasStarPlatinum()) return;
+        if (!power.hasStand()) return;
         StandProgress developed = new StandProgress(power.standId(), power.stamina(), next.development(), power.hadStand());
         player.setAttached(StandAttachments.PROGRESS, developed.withStamina(power.stamina()));
     }
 
     public static void update(ServerPlayer player, ResolveProgress next) {
         ResolveProgress previous = state(player);
-        if (!previous.equals(next)) player.setAttached(StandAttachments.RESOLVE, next);
+        if (!previous.equals(next)) player.setAttached(StandAttachments.resolveType(player), next);
         if (next.level() != previous.level()) {
             applyDevelopment(player, next);
             if (next.level() > previous.level()) player.sendSystemMessage(Component.translatable("jojo.fabric.progress.level_up", next.level(),
@@ -130,7 +130,11 @@ public final class ProgressionService {
 
     public static int timeStopTicks(ServerPlayer player) { return player.isCreative() ? 100 : state(player).timeStopTicks(); }
     public static void trainTimeStop(ServerPlayer player, int elapsedTicks) {
-        if (ownsStand(player) && player.isAlive() && !player.isCreative()) update(player, state(player).trainTimeStop(elapsedTicks));
+        if (ownsStand(player) && player.isAlive() && !player.isCreative()) {
+            var old = state(player);
+            float rate = player.getAttachedOrCreate(StandAttachments.PROGRESS).hasTheWorld() ? 0.1F : 0.25F;
+            update(player, old.withTraining(Math.min(95, old.trainingPoints() + Math.max(0, elapsedTicks) * rate * (old.isBurst() ? 4 : 1))));
+        }
     }
     private ProgressionService() { }
 }
