@@ -77,6 +77,7 @@ public final class ItemTrackingService {
     @FunctionalInterface public interface ConsumerPair { void accept(Entity entity, ItemStack stack); }
     private static final List<Adapter> ADAPTERS = new ArrayList<>();
     private static final Map<Entity, Container> INVENTORIES = new WeakHashMap<>();
+    private static final Map<UUID, java.lang.ref.WeakReference<Entity>> LIVE_ENTITIES = new HashMap<>();
     private static final Map<ServerPlayer, List<ItemTrackingPayload.View>> LAST_SENT = new WeakHashMap<>();
 
     private record Slot(Supplier<ItemStack> get, Consumer<ItemStack> set, Runnable changed) {
@@ -184,6 +185,7 @@ public final class ItemTrackingService {
     }
     public static void entityChanged(Entity entity) {
         if (!(entity.level() instanceof ServerLevel level)) return;
+        if (!entity.isRemoved()) LIVE_ENTITIES.put(entity.getUUID(), new java.lang.ref.WeakReference<>(entity));
         var seen = new HashMap<TrackedItemIdentity, ItemStack>();
         for (Kind kind : List.of(Kind.ENTITY_IS_ITEM, Kind.ENTITY_HAS_ITEM, Kind.STUCK_ARROW, Kind.STUCK_KNIFE)) {
             Location location = atEntity(entity, kind);
@@ -211,10 +213,16 @@ public final class ItemTrackingService {
     private static ServerLevel dimension(ServerPlayer owner, Location location) {
         return owner.level().getServer().getLevel(ResourceKey.create(Registries.DIMENSION, location.dimension));
     }
+    private static Entity findEntity(ServerLevel level, UUID id) {
+        Entity entity = level.getEntity(id);
+        if (entity != null) return entity;
+        var ref = LIVE_ENTITIES.get(id); Entity cached = ref == null ? null : ref.get();
+        return cached != null && !cached.isRemoved() && cached.level() == level ? cached : null;
+    }
     private static List<Slot> slots(ServerPlayer owner, Location location) {
         ServerLevel level = dimension(owner, location); if (level == null) return List.of();
         if (location.entity.isPresent()) {
-            Entity entity = level.getEntity(location.entity.get());
+            Entity entity = findEntity(level, location.entity.get());
             return entity == null || entity.isRemoved() ? List.of() : entitySlots(entity, location.kind);
         }
         if (location.block.isPresent() && level.hasChunkAt(location.block.get())) {
@@ -233,7 +241,7 @@ public final class ItemTrackingService {
         if (mark == null || mark.location.isEmpty()) return Optional.empty();
         Location location = mark.location.get(); var slot = locate(owner, mark); if (slot.isEmpty()) return Optional.empty();
         ServerLevel level = dimension(owner, location);
-        Entity entity = location.entity.map(level::getEntity).orElse(null);
+        Entity entity = location.entity.map(uuid -> findEntity(level, uuid)).orElse(null);
         Vec3 marker = entity != null ? entity.position().add(0, entity.getBbHeight() + .25, 0)
                 : Vec3.atBottomCenterOf(location.block.orElseThrow()).add(0, 1, 0);
         return Optional.of(new Resolved(new TrackedItemIdentity(id, owner.getUUID()), location, slot.get().stack(), entity, level, marker));
@@ -282,7 +290,7 @@ public final class ItemTrackingService {
             LAST_SENT.put(owner, views); ItemTrackingPayload.send(owner, views);
         }
     }
-    public static void clearRuntime() { INVENTORIES.clear(); LAST_SENT.clear(); }
+    public static void clearRuntime() { INVENTORIES.clear(); LIVE_ENTITIES.clear(); LAST_SENT.clear(); }
     public static void initialize() { TrackedItemIdentity.initialize(); }
     private ItemTrackingService() { }
 }

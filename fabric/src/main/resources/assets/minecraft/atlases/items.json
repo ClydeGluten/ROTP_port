@@ -6,6 +6,7 @@
     { "type": "minecraft:single", "resource": "jojo:vanilla_1_16_5/item/spawn_egg" },
     { "type": "minecraft:single", "resource": "jojo:vanilla_1_16_5/item/spawn_egg_overlay" },
     { "type": "minecraft:single", "resource": "jojo:vanilla_1_16_5/item/filled_map" },
-    { "type": "minecraft:single", "resource": "jojo:vanilla_1_16_5/item/filled_map_markings" }
+    { "type": "minecraft:single", "resource": "jojo:vanilla_1_16_5/item/filled_map_markings" },
+    { "type": "minecraft:single", "resource": "jojo:entity/projectiles/mr_fireball" }
   ]
 }

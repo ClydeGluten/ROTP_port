@@ -10,4 +10,7 @@ abstract class TrackingEntityMixin {
   var entity=(net.minecraft.world.entity.Entity)(Object)this;
   if(!entity.level().isClientSide()&&(entity instanceof net.minecraft.world.entity.item.ItemEntity||entity instanceof net.minecraft.world.entity.decoration.ItemFrame||entity instanceof net.minecraft.world.entity.projectile.arrow.AbstractArrow||entity instanceof net.minecraft.world.Container))TrackingHooks.entityChanged(entity);
  }
+ @Inject(method="teleport",at=@At("RETURN")) private void jojo$teleported(net.minecraft.world.level.portal.TeleportTransition transition,CallbackInfoReturnable<net.minecraft.world.entity.Entity> cir){
+  var result=cir.getReturnValue();if(result!=null&&!result.level().isClientSide())TrackingHooks.entityChanged(result);
+ }
 }

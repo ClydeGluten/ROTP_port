@@ -48,19 +48,12 @@ public final class StandBlockShardEntity extends Projectile implements BrokenBlo
         setDeltaMovement(new Vec3(x, y, z).normalize().add(random.nextGaussian() * .0075 * inaccuracy, random.nextGaussian() * .0075 * inaccuracy, random.nextGaussian() * .0075 * inaccuracy).scale(speed));
         updateRotation(); needsSync = true;
     }
+    private static java.util.function.Consumer<StandBlockShardEntity> clientBreak = s -> { };
+    public static void setClientBreak(java.util.function.Consumer<StandBlockShardEntity> handler) { clientBreak = Objects.requireNonNull(handler); }
     @Override public void tick() {
         if (TimeStopService.isFrozen(this)) return;
         if (!level().isClientSide() && (tickCount > 100 || getOwner() != null && !getOwner().isAlive())) { discard(); return; }
         super.tick();
-        if (restored() && entityData.get(ORIGIN).isPresent()) {
-            if (restoreTick-- == 0 && !level().isClientSide()) { discard(); return; }
-            setDeltaMovement(Vec3.atCenterOf(entityData.get(ORIGIN).get()).subtract(position()).scale(.5));
-            if (user() instanceof ServerPlayer player && !StandConfig.staminaFree(player)) {
-                var progress = player.getAttachedOrCreate(StandAttachments.PROGRESS); var stand = StandService.currentManifestation(player);
-                float regen = progress.withStamina(0).regenerate(stand != null, stand == null || stand.allowsStaminaRegen(), player.getFoodData().getFoodLevel(), false).stamina();
-                player.setAttached(StandAttachments.PROGRESS, progress.withStamina(Math.max(0, progress.stamina() - regen - 2)));
-            }
-        }
         var from = position(); var velocity = getDeltaMovement(); var to = from.add(velocity);
         if (level() instanceof ServerLevel level) {
             HitResult hit = level.clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
@@ -84,7 +77,19 @@ public final class StandBlockShardEntity extends Projectile implements BrokenBlo
                 breakShard();
             }
         }
-        if (!isRemoved()) { setPos(to); setDeltaMovement(velocity.subtract(0, isNoGravity() ? 0 : .05, 0).scale(.99 * (isInWater() ? .8 : 1))); updateRotation(); }
+        if (isRemoved()) return;
+        if (restored() && entityData.get(ORIGIN).isPresent()) {
+            if (restoreTick-- == 0 && !level().isClientSide()) { discard(); return; }
+            setDeltaMovement(Vec3.atCenterOf(entityData.get(ORIGIN).get()).subtract(position()).scale(.5));
+            if (user() instanceof ServerPlayer player && !StandConfig.staminaFree(player)) {
+                var progress = player.getAttachedOrCreate(StandAttachments.PROGRESS); var stand = StandService.currentManifestation(player);
+                float regen = progress.withStamina(0).regenerate(stand != null, stand == null || stand.allowsStaminaRegen(), player.getFoodData().getFoodLevel(), false).stamina();
+                player.setAttached(StandAttachments.PROGRESS, progress.withStamina(Math.max(0, progress.stamina() - regen - 2)));
+            }
+        }
+        var move = getDeltaMovement(); var next = position().add(move);
+        setDeltaMovement(move.subtract(0, isNoGravity() ? 0 : .05, 0).scale(.99 * (isInWater() ? .8 : 1)));
+        setPos(next); updateRotation();
     }
     @Override protected boolean canHitEntity(Entity target) {
         if (!target.isAlive() || target.isSpectator() || !target.isPickable()) return false;
@@ -94,6 +99,7 @@ public final class StandBlockShardEntity extends Projectile implements BrokenBlo
         return !(target instanceof Player player && user() instanceof Player attacker && !attacker.canHarmPlayer(player));
     }
     private void breakShard() { level().broadcastEntityEvent(this, (byte) 3); discard(); }
+    @Override public void handleEntityEvent(byte id) { if (id == 3 && level().isClientSide()) clientBreak.accept(this); else super.handleEntityEvent(id); }
     @Override public boolean hurtServer(ServerLevel level, DamageSource source, float amount) { if (isInvulnerableToBase(source)) return false; breakShard(); return true; }
     public static float bleedingChance(LivingEntity target) { return Math.max(1 - target.getArmorCoverPercentage(), .05F); }
     public static void bleed(LivingEntity target) { target.addEffect(new MobEffectInstance(VampireBlood.BLEEDING, 100, 0, false, false, true)); }

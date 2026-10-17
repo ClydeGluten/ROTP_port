@@ -226,7 +226,8 @@ public final class StandHeavyImpact {
             hurt(level, target, source, damage * (attacker instanceof StandManifestation ? StandConfig.server().standPowerMultiplier() : 1), attacker);
             target.setDeltaMovement(target.getDeltaMovement().add(toward.scale(push))); target.syncVelocity = true;
         }
-        var destroyed = new ArrayList<BlockPos>(); var drops = new ArrayList<Drop>(); var visuals = new ArrayList<BlockVisual>();
+        var destroyed = new ArrayList<BlockPos>(); var drops = new ArrayList<Drop>(); var brokenVisuals = new ArrayList<BlockVisual>();
+        int bMinX = 30000001, bMinY = 999, bMinZ = 30000001, bMaxX = -30000001, bMaxY = -999, bMaxZ = -30000001;
         if (breakBlocks) for (var pos : blocks) {
             if (!allowed(level, pos, attacker)) continue; var state = level.getBlockState(pos); var be = level.getBlockEntity(pos);
             var fragments = new ArrayList<StandBlockShardEntity>();
@@ -243,18 +244,45 @@ public final class StandHeavyImpact {
                 }
             } else RestorationHooks.remember(level, pos, state, be, List.of());
             if (level.setBlock(pos, state.getFluidState().createLegacyBlock(), 3)) destroyed.add(pos);
-            if (!(state.getBlock() instanceof BaseFireBlock)) visuals.add(new BlockVisual(pos, Block.getId(state)));
+            if (!(state.getBlock() instanceof BaseFireBlock)) {
+                bMinX = Math.min(bMinX, pos.getX()); bMinY = Math.min(bMinY, pos.getY()); bMinZ = Math.min(bMinZ, pos.getZ());
+                bMaxX = Math.max(bMaxX, pos.getX()); bMaxY = Math.max(bMaxY, pos.getY()); bMaxZ = Math.max(bMaxZ, pos.getZ());
+                brokenVisuals.add(new BlockVisual(pos.immutable(), Block.getId(state)));
+            }
             fragments.forEach(level::addFreshEntity);
             var history = BlockHistory.at(level, pos); var record = history == null ? null : history.getBrokenBlockAt(pos);
             if (record != null && !fragments.isEmpty()) record.withEntities(fragments.toArray(StandBlockShardEntity[]::new));
         }
         drops.forEach(drop -> Block.popResource(level, drop.pos, drop.stack));
+        sendVisuals(level, brokenVisuals, bMinX, bMinY, bMinZ, bMaxX, bMaxY, bMaxZ);
         // The source's active test=true includes the entire remaining cube, not a spherical shell.
-        for (var pos : BlockPos.betweenClosed(BlockPos.containing(center.subtract(radius, radius, radius)), new BlockPos((int) Math.ceil(center.x + radius), (int) Math.ceil(center.y + radius), (int) Math.ceil(center.z + radius)))) {
-            var state = level.getBlockState(pos); if (!state.isAir()) visuals.add(new BlockVisual(pos.immutable(), Block.getId(state)));
+        var shockwaveVisuals = new ArrayList<BlockVisual>();
+        int sMinX = (int) Math.floor(center.x - radius), sMinY = (int) Math.floor(center.y - radius), sMinZ = (int) Math.floor(center.z - radius);
+        int sMaxX = (int) Math.ceil(center.x + radius), sMaxY = (int) Math.ceil(center.y + radius), sMaxZ = (int) Math.ceil(center.z + radius);
+        for (var pos : BlockPos.betweenClosed(new BlockPos(sMinX, sMinY, sMinZ), new BlockPos(sMaxX, sMaxY, sMaxZ))) {
+            var state = level.getBlockState(pos); if (!state.isAir()) shockwaveVisuals.add(new BlockVisual(pos.immutable(), Block.getId(state)));
         }
-        if (!visuals.isEmpty()) { var payload = new ShockwavePayload(List.copyOf(visuals)); for (var player : level.players()) if (player.distanceToSqr(center) < (radius + 64) * (radius + 64)) ServerPlayNetworking.send(player, payload); }
+        sendVisuals(level, shockwaveVisuals, sMinX, sMinY, sMinZ, sMaxX, sMaxY, sMaxZ);
         return destroyed;
+    }
+    private static void sendVisuals(ServerLevel level, List<BlockVisual> visuals, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+        if (visuals.isEmpty()) return;
+        int size = visuals.size();
+        if (size > 256) {
+            for (int i = 0; i < 256; i++) {
+                int index = i + level.getRandom().nextInt(size - i);
+                var tmp = visuals.get(index); visuals.set(index, visuals.get(i)); visuals.set(i, tmp);
+            }
+            visuals = visuals.subList(0, 256);
+        }
+        var payload = new ShockwavePayload(List.copyOf(visuals));
+        for (var player : level.players()) {
+            double x = player.getX(), y = player.getY(), z = player.getZ();
+            double dx = x < minX ? minX - x : x > maxX ? x - maxX : 0;
+            double dy = y < minY ? minY - y : y > maxY ? y - maxY : 0;
+            double dz = z < minZ ? minZ - z : z > maxZ ? z - maxZ : 0;
+            if (dx * dx + dy * dy + dz * dz < 64 * 64) ServerPlayNetworking.send(player, payload);
+        }
     }
     private StandHeavyImpact() { }
 }

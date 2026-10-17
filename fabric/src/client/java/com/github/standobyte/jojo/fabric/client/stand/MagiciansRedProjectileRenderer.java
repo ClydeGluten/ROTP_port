@@ -54,9 +54,10 @@ public final class MagiciansRedProjectileRenderer {
         }
     }
     private static final class Fireball extends Base<MRFireballEntity> {
-        private final ItemModelResolver resolver;private final ItemStack icon;
-        Fireball(EntityRendererProvider.Context context){super(context);resolver=context.getItemModelResolver();icon=new ItemStack(Items.PAPER);icon.set(DataComponents.ITEM_MODEL,RipplesFabric.id("item_icon_mr_fireball"));}
-        @Override public void extractRenderState(MRFireballEntity entity,State state,float partial){super.extractRenderState(entity,state,partial);resolver.updateForNonLiving(state.item,icon,ItemDisplayContext.GROUND,entity);}
+        private final ItemModelResolver resolver;private ItemStack icon;
+        Fireball(EntityRendererProvider.Context context){super(context);resolver=context.getItemModelResolver();}
+        private ItemStack icon(){if(icon==null){icon=new ItemStack(Items.PAPER);icon.set(DataComponents.ITEM_MODEL,RipplesFabric.id("item_icon_mr_fireball"));}return icon;}
+        @Override public void extractRenderState(MRFireballEntity entity,State state,float partial){super.extractRenderState(entity,state,partial);resolver.updateForNonLiving(state.item,icon(),ItemDisplayContext.GROUND,entity);}
         @Override public void submit(State state,PoseStack pose,SubmitNodeCollector collector,CameraRenderState camera){
             if(!state.visible)return;pose.pushPose();pose.rotate(camera.orientation);pose.rotateDegrees(Axis.YP,180);state.item.submit(pose,collector,0xF000F0,OverlayTexture.NO_OVERLAY,state.outlineColor);pose.popPose();super.submit(state,pose,collector,camera);
         }

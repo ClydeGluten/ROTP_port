@@ -4,6 +4,7 @@ import com.github.standobyte.jojo.core.StandProgress;
 import com.github.standobyte.jojo.fabric.client.*;
 import com.github.standobyte.jojo.fabric.stand.silverchariot.*;
 import com.github.standobyte.jojo.fabric.stand.hierophant.*;
+import com.github.standobyte.jojo.fabric.stand.magiciansred.*;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.*;
@@ -57,8 +58,8 @@ public final class StandExpansionClientGameTest implements FabricClientGameTest 
     private static boolean ready(net.minecraft.client.Minecraft client,net.minecraft.resources.Identifier action){return client.player.getAttachedOrCreate(StandHudState.REGISTERED).actions().stream().anyMatch(v->v.action().equals(action)&&v.available());}
     private static void exercise(ClientGameTestContext context,TestServerContext server,String mode){
         var uuid=context.computeOnClient(client->client.player.getUUID());
-        for(String standId:java.util.List.of(StandProgress.SILVER_CHARIOT,StandProgress.HIEROPHANT_GREEN)){
-            boolean chariot=standId.equals(StandProgress.SILVER_CHARIOT);
+        for(String standId:java.util.List.of(StandProgress.SILVER_CHARIOT,StandProgress.HIEROPHANT_GREEN,MagiciansRedActions.ID)){
+            boolean chariot=standId.equals(StandProgress.SILVER_CHARIOT),magicians=standId.equals(MagiciansRedActions.ID);
             int victim=server.computeOnServer(minecraft->{
                 var player=minecraft.getPlayerList().getPlayer(uuid);StandService.clear(player);player.setGameMode(GameType.CREATIVE);player.setNoGravity(true);
                 player.connection.teleport(.5,140,.5,0,15);StandService.grant(player,standId);
@@ -70,34 +71,73 @@ public final class StandExpansionClientGameTest implements FabricClientGameTest 
             context.getInput().pressKey(key(context,"key.jojo.fabric.summon"));
             context.waitFor(client->StandView.ownManifestation(client)!=null&&StandView.ownManifestation(client).definition().id().equals(standId));
             context.runOnClient(client->client.options.setCameraType(CameraType.THIRD_PERSON_BACK));context.waitTicks(20);
-            context.takeScreenshot("stands-"+mode+"-"+(chariot?"silver-chariot-armored":"hierophant-green-model"));
+            context.takeScreenshot("stands-"+mode+"-"+(chariot?"silver-chariot-armored":magicians?"magicians-red-model":"hierophant-green-model"));
             context.runOnClient(client->client.options.setCameraType(CameraType.FIRST_PERSON));context.getInput().lookAt(0,15);
-            select(context,true,chariot?0:1);
-            var action=chariot?SilverChariotActions.ATTACK:HierophantGreenActions.SPLASH;
-            context.waitFor(client->ready(client,action));click(context,true);
-            server.waitFor(minecraft->((LivingEntity)minecraft.getPlayerList().getPlayer(uuid).level().getEntity(victim)).getHealth()<500);
-            context.takeScreenshot("stands-"+mode+"-"+(chariot?"silver-chariot-light":"emerald-splash-hud"));
-            if(chariot){
-                select(context,true,1);context.waitFor(client->ready(client,SilverChariotActions.BARRAGE));
+            if(magicians){
+                select(context,true,1);context.waitFor(client->ready(client,MagiciansRedActions.FLAME_BURST));
                 context.getInput().holdMouse(InputConstants.MOUSE_BUTTON_LEFT);
-                context.waitFor(client->StandView.ownManifestation(client) instanceof SilverChariotEntity stand&&stand.attackKind()==SilverChariotEntity.Kind.BARRAGE);
-                context.takeScreenshot("stands-"+mode+"-silver-chariot-barrage");context.getInput().releaseMouse(InputConstants.MOUSE_BUTTON_LEFT);
-                select(context,false,1);context.waitFor(client->ready(client,SilverChariotActions.ARMOR));click(context,false);
-                context.waitFor(client->StandView.ownManifestation(client) instanceof SilverChariotEntity stand&&!stand.hasArmor());
-                context.runOnClient(client->client.options.setCameraType(CameraType.THIRD_PERSON_BACK));context.takeScreenshot("stands-"+mode+"-silver-chariot-armor-removed");
-                context.runOnClient(client->client.options.setCameraType(CameraType.FIRST_PERSON));
-                server.runOnServer(minecraft->minecraft.getPlayerList().getPlayer(uuid).setGameMode(GameType.SURVIVAL));
-                select(context,true,2);context.waitFor(client->ready(client,SilverChariotActions.LAUNCH));click(context,true);
-                context.waitFor(client->client.player.getAttachedOrCreate(StandHudState.REGISTERED).actions().stream().anyMatch(v->v.action().equals(SilverChariotActions.LAUNCH)&&v.remaining()>0));
-                context.takeScreenshot("stands-"+mode+"-silver-chariot-rapier");
+                context.waitFor(client->StandView.ownManifestation(client) instanceof MagiciansRedEntity stand&&stand.task()==MagiciansRedEntity.Task.FLAME_BURST);
+                server.waitFor(minecraft->((LivingEntity)minecraft.getPlayerList().getPlayer(uuid).level().getEntity(victim)).getHealth()<500);
+                select(context,false,2);context.waitFor(client->ready(client,MagiciansRedActions.DETECTOR));click(context,false);
+                server.waitFor(minecraft->{var p=minecraft.getPlayerList().getPlayer(uuid);return StandService.currentManifestation(p) instanceof MagiciansRedEntity s&&s.task()==MagiciansRedEntity.Task.FLAME_BURST&&!p.level().getEntitiesOfClass(MRDetectorEntity.class,p.getBoundingBox().inflate(8)).isEmpty();});
+                context.takeScreenshot("stands-"+mode+"-magicians-red-flame-detector");
+                context.getInput().releaseMouse(InputConstants.MOUSE_BUTTON_LEFT);
+                server.waitFor(minecraft->((MagiciansRedEntity)StandService.currentManifestation(minecraft.getPlayerList().getPlayer(uuid))).task()==MagiciansRedEntity.Task.NONE);
+                server.runOnServer(minecraft->((LivingEntity)minecraft.getPlayerList().getPlayer(uuid).level().getEntity(victim)).setHealth(500));
+                select(context,true,3);context.waitFor(client->ready(client,MagiciansRedActions.CROSSFIRE));
+                context.getInput().holdMouse(InputConstants.MOUSE_BUTTON_LEFT);
+                context.waitFor(client->StandView.ownManifestation(client) instanceof MagiciansRedEntity s&&s.task()==MagiciansRedEntity.Task.CROSSFIRE);
+                server.waitFor(minecraft->((LivingEntity)minecraft.getPlayerList().getPlayer(uuid).level().getEntity(victim)).getHealth()<500);
+                context.takeScreenshot("stands-"+mode+"-magicians-red-crossfire");
+                context.getInput().releaseMouse(InputConstants.MOUSE_BUTTON_LEFT);
+                server.waitFor(minecraft->((MagiciansRedEntity)StandService.currentManifestation(minecraft.getPlayerList().getPlayer(uuid))).task()==MagiciansRedEntity.Task.NONE);
+                server.runOnServer(minecraft->{var e=(LivingEntity)minecraft.getPlayerList().getPlayer(uuid).level().getEntity(victim);e.snapTo(.5,140,3.2,180,0);e.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);e.setHealth(500);});
+                select(context,true,0);
+                for(int i=0;i<3;i++){
+                    context.waitFor(client->ready(client,MagiciansRedActions.PUNCH));click(context,true);context.waitTicks(2);
+                    server.waitFor(minecraft->{var s=(MagiciansRedEntity)StandService.currentManifestation(minecraft.getPlayerList().getPlayer(uuid));return s.task()==MagiciansRedEntity.Task.NONE||s.actionPhase()==3;});
+                }
+                server.waitFor(minecraft->{var s=(MagiciansRedEntity)StandService.currentManifestation(minecraft.getPlayerList().getPlayer(uuid));return s.task()==MagiciansRedEntity.Task.NONE&&s.finisherCharge()>=.5F;});
+                context.waitFor(client->StandView.ownManifestation(client) instanceof MagiciansRedEntity s&&s.task()==MagiciansRedEntity.Task.NONE&&s.finisherCharge()>=.5F);
+                server.runOnServer(minecraft->{var e=(LivingEntity)minecraft.getPlayerList().getPlayer(uuid).level().getEntity(victim);e.snapTo(.5,140,4.5,180,0);e.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);});
+                select(context,false,1);context.waitFor(client->ready(client,MagiciansRedActions.BIND));
+                context.getInput().holdMouse(InputConstants.MOUSE_BUTTON_RIGHT);
+                context.waitFor(client->StandView.ownManifestation(client) instanceof MagiciansRedEntity s&&s.boundTargetId()==victim);
+                context.getInput().releaseMouse(InputConstants.MOUSE_BUTTON_RIGHT);
+                context.getInput().holdKey(options->options.keyShift);
+                context.waitFor(client->ready(client,MagiciansRedActions.KICK));click(context,true);
+                context.getInput().releaseKey(options->options.keyShift);
+                context.waitFor(client->StandView.ownManifestation(client) instanceof MagiciansRedEntity s&&s.task()==MagiciansRedEntity.Task.KICK);
+                context.takeScreenshot("stands-"+mode+"-magicians-red-bind-kick");
+                server.waitFor(minecraft->((MagiciansRedEntity)StandService.currentManifestation(minecraft.getPlayerList().getPlayer(uuid))).task()==MagiciansRedEntity.Task.NONE);
             }else{
-                server.waitFor(minecraft->((HierophantGreenEntity)StandService.currentManifestation(minecraft.getPlayerList().getPlayer(uuid))).task()==HierophantGreenEntity.Task.NONE);
+                select(context,true,chariot?0:1);
+                var action=chariot?SilverChariotActions.ATTACK:HierophantGreenActions.SPLASH;
+                context.waitFor(client->ready(client,action));click(context,true);
+                server.waitFor(minecraft->((LivingEntity)minecraft.getPlayerList().getPlayer(uuid).level().getEntity(victim)).getHealth()<500);
+                context.takeScreenshot("stands-"+mode+"-"+(chariot?"silver-chariot-light":"emerald-splash-hud"));
+                if(chariot){
+                    select(context,true,1);context.waitFor(client->ready(client,SilverChariotActions.BARRAGE));
+                    context.getInput().holdMouse(InputConstants.MOUSE_BUTTON_LEFT);
+                    context.waitFor(client->StandView.ownManifestation(client) instanceof SilverChariotEntity stand&&stand.attackKind()==SilverChariotEntity.Kind.BARRAGE);
+                    context.takeScreenshot("stands-"+mode+"-silver-chariot-barrage");context.getInput().releaseMouse(InputConstants.MOUSE_BUTTON_LEFT);
+                    select(context,false,1);context.waitFor(client->ready(client,SilverChariotActions.ARMOR));click(context,false);
+                    context.waitFor(client->StandView.ownManifestation(client) instanceof SilverChariotEntity stand&&!stand.hasArmor());
+                    context.runOnClient(client->client.options.setCameraType(CameraType.THIRD_PERSON_BACK));context.takeScreenshot("stands-"+mode+"-silver-chariot-armor-removed");
+                    context.runOnClient(client->client.options.setCameraType(CameraType.FIRST_PERSON));
+                    server.runOnServer(minecraft->minecraft.getPlayerList().getPlayer(uuid).setGameMode(GameType.SURVIVAL));
+                    select(context,true,2);context.waitFor(client->ready(client,SilverChariotActions.LAUNCH));click(context,true);
+                    context.waitFor(client->client.player.getAttachedOrCreate(StandHudState.REGISTERED).actions().stream().anyMatch(v->v.action().equals(SilverChariotActions.LAUNCH)&&v.remaining()>0));
+                    context.takeScreenshot("stands-"+mode+"-silver-chariot-rapier");
+                }else{
+                    server.waitFor(minecraft->((HierophantGreenEntity)StandService.currentManifestation(minecraft.getPlayerList().getPlayer(uuid))).task()==HierophantGreenEntity.Task.NONE);
+                }
             }
             context.getInput().holdKey(key(context,"key.jojo.fabric.control"));
             context.waitFor(client->client.getCameraEntity() instanceof StandManifestation stand&&stand.manuallyControlled());
-            context.takeScreenshot("stands-"+mode+"-"+(chariot?"silver-chariot":"hierophant-green")+"-remote-hands");
+            context.takeScreenshot("stands-"+mode+"-"+(chariot?"silver-chariot":magicians?"magicians-red":"hierophant-green")+"-remote-hands");
             context.getInput().releaseKey(key(context,"key.jojo.fabric.control"));context.waitFor(client->client.getCameraEntity()==client.player);
-            server.runOnServer(minecraft->{var player=minecraft.getPlayerList().getPlayer(uuid);player.level().getEntity(victim).discard();StandService.dismiss(player);});
+            server.runOnServer(minecraft->{var player=minecraft.getPlayerList().getPlayer(uuid);for(var e:player.level().getEntities(player,player.getBoundingBox().inflate(32),e->e instanceof MRProjectileEntity||e instanceof MRDetectorEntity))e.discard();player.level().getEntity(victim).discard();StandService.dismiss(player);});
             context.waitFor(client->StandView.ownManifestation(client)==null);
         }
     }

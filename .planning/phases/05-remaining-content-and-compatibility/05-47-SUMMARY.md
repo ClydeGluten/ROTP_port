@@ -1,8 +1,8 @@
 ---
 phase: 05-remaining-content-and-compatibility
 plan: 47
-status: awaiting-integrated-verification
-completed: false
+status: completed
+completed: true
 subsystem: shared-stand-linked-state
 tags: [fabric, item-components, actual-holders, persistent-effects, lifeform-subtypes]
 requires: [05-28]

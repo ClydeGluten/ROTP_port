@@ -28,6 +28,7 @@ public final class RipplesClient implements ClientModInitializer {
         net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register((handler,client)->client.execute(com.github.standobyte.jojo.fabric.StandConfig::resetClient));
         TimeStopClient.initialize();
         TrackingClient.initialize();
+        com.github.standobyte.jojo.fabric.client.stand.StandBlockShardRenderer.initialize();
         com.github.standobyte.jojo.fabric.client.stand.MagiciansRedRenderer.initialize();
         com.github.standobyte.jojo.fabric.StandPerception.setClientSpectator(com.github.standobyte.jojo.fabric.client.pillarman.PossessionClient::trueSpectator);
         com.github.standobyte.jojo.fabric.client.stand.SilverChariotRenderer.initialize();

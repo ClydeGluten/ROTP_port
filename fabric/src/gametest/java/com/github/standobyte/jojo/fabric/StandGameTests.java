@@ -238,7 +238,7 @@ public final class StandGameTests {
         StandService.toggle(player);
         StandService.startHeld(player, true);
         var stand = StandService.current(player);
-        var source = player.damageSources().playerAttack(attacker);
+        var source = StandDamage.marked(player.damageSources().playerAttack(attacker), 0);
         test.assertTrue(stand.hurtServer(test.getLevel(), source, 10), "First transferred hit is accepted");
         test.assertTrue(Math.abs(player.getHealth() - 19.6F) < 0.001F, "Transferred damage is guarded exactly once");
         test.assertFalse(stand.hurtServer(test.getLevel(), source, 10), "Vanilla cooldown rejects duplicate damage");

@@ -2,7 +2,8 @@
 phase: 05-remaining-content-and-compatibility
 plan: 42
 subsystem: magicians-red-presentation
-status: awaiting-integration-verification
+status: completed
+completed: true
 requires: [05-41, 05-55, 05-74]
 provides: [original MR body and poses, animated body fire, six dedicated projectile renderers, detector and bind effects]
 affects: [05-58, 05-72]

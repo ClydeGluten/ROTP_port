@@ -2,7 +2,8 @@
 phase: 05-remaining-content-and-compatibility
 plan: 41
 subsystem: magicians-red
-status: awaiting-integration-verification
+status: completed
+completed: true
 requires: [05-28, 05-29, 05-37, 05-43, 05-55, 05-59]
 provides: [Magicians Red manifestation, ten original actions, six projectile types, source fire/bind/detector combat]
 affects: [05-42, 05-45, 05-55, 05-58, 05-72]
