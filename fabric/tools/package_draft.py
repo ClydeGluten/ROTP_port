@@ -20,6 +20,7 @@ FABRIC = ROOT / "fabric"
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--verification-log", type=Path, required=True)
+    parser.add_argument("--client-scope", default="complete suite", help="Executed client suite, recorded in the manifest")
     args = parser.parse_args()
     log = args.verification_log.resolve()
     evidence = log.read_text()
@@ -69,6 +70,91 @@ Or use your Minecraft launcher:
   Copy BOTH JARs from mods/ into that instance's mods/ directory.
   Remove any older Ripples of the Past JAR from that instance first.
   Create a fresh test world. Old Forge saves are not migrated.
+
+Draft 18: Silver Chariot and Hierophant Green
+  Both join the four-Stand natural awakening cycle after Star Platinum and The World.
+  /rotp grant @s silver_chariot or /rotp grant @s hierophant_green; M summons.
+  K opens Stand mode. Hold V/B plus a number for attacks/abilities; Shift selects variants.
+  Chariot: rapier attacks/barrage, thrusting dash, sweep, rapier launch/recovery and armor removal.
+  Hierophant: Emerald Splash, grapples, barriers, Emerald Field and possession.
+  Hold O for manual Stand control, including each Stand's original first-person hands.
+  Creative unlocks progression. Survival earns the original Resolve and action training.
+  Server settings: config/jojo/stand.json; /rotp reload applies edits and synchronizes clients.
+  Terrain history is available for the coming Crazy Diamond port; persistence defaults off.
+  Full original-mod parity remains in progress. Further Stand deliveries follow.
+
+Draft 17: zombie players, Pillar Men and equipment
+  Original zombie player actions, all Pillar modes, possession and evolution are available.
+  Original acquisition is command-driven: /jojopower give @s jojo:pillarman or jojo:zombie.
+  /pillarman set stage @s 2 and /pillarman set mode @s wind configure evolution and mode.
+  J opens the power HUD; hold V/B and press a number to select an action. Shift selects variations.
+  Hold the selected action with left/right mouse. Shift exits possession.
+  Pillar temples, six-part slumbering sculptures, engravings and boiling blood are included.
+  Blade Hat: sneak-use equips an empty head slot; normal use throws. Tommy Gun: sneak-use reloads.
+  Further Stands and broader original-mod compatibility remain in progress.
+
+Draft 16.1: liquid-walking crash fix
+  Water/lava walking no longer recurses through modern supporting-block collision checks.
+  Original grounded state, energy costs and lava damage remain; existing draft saves need no reset.
+
+Draft 16: source-driven Hamon corrections
+  Skill descriptions drag-scroll; prerequisites and occupied technique slots navigate correctly.
+  Skill selection resets scrolling; left-handed Sendo Wave Kick uses the correct arm variant.
+  Health damage releases Hamon Shock; cactus/berry protection handles each contact and original sparks.
+  Plant Infusion remains block-only; Life Magnetism retains the original free-hand rules.
+  Glider landings protect passengers; Molotovs require ignition before client throw prediction.
+  Daily training and level-100 exercise bonuses preserve original update/reload timing.
+  Review and limits: fabric/migration/HAMON_SOURCE_REVIEW.md. Manual playtest pending.
+
+Draft 15: original Hamon progression and abilities
+  Right-click a Hamon Master to learn. Find a temple in new windswept-hill chunks,
+  use /locate structure jojo:hamon_temple, or /summon jojo:hamon_master for a quick check.
+  H opens the original Hamon window. J toggles Hamon mode. Hold middle mouse to breathe.
+  V/B select attacks/abilities; left/right mouse use them; Shift selects variations.
+  Mining, running, swimming and meditation train breathing. Combat actions train Strength/Control.
+  Learn original base skills and choose Jonathan, Zeppeli, Joseph, Caesar or Lisa Lisa.
+  Try mask, gloves/soap, oil, clackers, infused Molotovs, leaf glider and inheritance.
+  Config: config/jojo/hamon.json. Full route/checklist: fabric/migration/HAMON_PLAYTEST.md.
+  Manual playtest pending. Other unported Stand/power integrations remain dependencies.
+
+Draft 14: vampire parity follow-up
+  Blood Gift vampires can use their original weaker leap with Shift+Space.
+  Stun/Freeze enforce original effect immunity; stunned creepers stop their fuse.
+  Daytime coffin sleep restores the original advancement. Eye-beam rendering
+  preserves the original culling and camera-pitch lighting.
+
+Draft 13: remaining vampire scope
+  J opens Vampirism. Hold V + 3 for Freeze; V + 4 for Space Ripper Stingy Eyes.
+  Hold eyes for at least one second, release to fire. Hold B to select Blood Gift, Zombies or Evil Atmosphere.
+  Shift + Space in vampire mode leaps. Full vampires gain the advanced actions; weak vampires keep Drain/Gift.
+  At least 80% blood unlocks the original nine-second Time Stop cap and stronger Stand stamina regeneration.
+  /rotp progression @s training 175 sets the extended cap for controlled Survival checks.
+  Craft an oak coffin from matching wool. Daytime sleeping skips to night; vampire respawns remain sheltered.
+  Cure: eat an enchanted golden apple under Weakness V, empty blood, wait 40 minutes, then wake from sleep.
+  Curing passes through four stages. Beds and iron bars can speed it up; blood pauses progress.
+  Place masks on floors/walls/ceilings. Nearby blood activates ordinary Stone Masks. Aja masks keep their original non-Pillar-Man lethal behavior.
+  Blood Gift can rescue a dying player before respawn. Try multiplayer donors and recipients.
+  Config: config/jojo/vampirism.json (server), config/jojo/vampire-client.json (glowing eyes).
+  Hamon self-destruction/scarf defenses are migrated; natural Hamon learning is included in Draft 15.
+  Operator-only /rotp vampire hamon_memory <0..60> exposes retained strength for testing; clear_hamon_memory removes it.
+  Player animation uses original keys with hinge bends; armor stays rigid under the modern renderer.
+  Focused validation runs the vampire client suite in singleplayer and a dedicated connection.
+
+Draft 12: playtest fixes and starter vampirism
+  Stand attacks now follow vertical aim. Check targets above/below, in first person and F5.
+  Knife tooltips and held-item prompts explain acquisition and your current rebound controls.
+  Find a Stone Mask in a new jungle-temple chest (8% bonus chance), or /give @s jojo:stone_mask.
+  Under shelter or at night, equip the mask on your head and use exactly one held knife.
+  Hold Alt when power controls capture right-click. Mask drops after 101 ticks; knife is reusable.
+  J opens Vampirism; empty your main hand. V + 1 selects Claw, V + 2 Blood Drain for full vampires.
+  Left-click Claw; hold left-click on a nearby living target to drain blood. Blood fuels healing/passives.
+  Hold right-click for 60 ticks to give blood to a human player with at most three hearts.
+  Donor needs more than five hearts; the hold costs five blood/tick and completion costs five hearts.
+  Recipient becomes weak: Drain/Gift only, lost on death. A mask upgrades to full, retained on death.
+  K returns to Stand mode. Shared J now opens Vampirism for vampires: select Time Stop in Stand HUD
+  or rebind its direct shortcut. Both powers coexist; Draft 13 adds vampire Time Stop/stamina bonuses.
+  Test sunlight versus shelter/rain, blood bar changes, save/reload, death, and gifting another player.
+  Claw block damage can be disabled with /gamerule jojo:abilities_break_blocks false.
 
 Draft 11: knives and The World volley
   Craft four knives with an iron ingot above a stick. Maximum stack: sixteen.
@@ -120,9 +206,10 @@ Controls (remappable in Minecraft Controls)
   Backslash: original layout editor. Left-click pick/place, right-click enable/disable.
   Move actions between rows, or use number keys to reorder. Done, Escape and backslash SAVE.
   O held: manual control; WASD moves the Stand, Space/Shift moves vertically. Release to return.
-  H: progression screen; scroll or use Up/Down/Home/End, Escape closes.
+  H: Hamon screen when learned, otherwise progression overview; Escape closes.
   Direct shortcuts: R punch; hold Z barrage, X guard, N inhale, Y zoom; C Star Finger.
-  J: charge Time Stop, press again to resume. U: either Stand Quick move. I: The World Time Stop Punch.
+  J: Hamon/vampire mode when acquired; otherwise charge Time Stop, press again to resume.
+  Rebind direct Time Stop separately to use it while vampiric. U: Quick move. I: The World Time Stop Punch.
   Heavy/uppercut direct shortcuts start unbound; bind them in Controls if wanted.
   Mouse-selected Time Stop must be held until charged. Releasing early cancels charging.
   With either Stand, Shift + selected Time Stop uses Quick move. Shift + Time Stop Punch uses backshot.
@@ -158,13 +245,13 @@ Existing Survival progression
   Star Platinum unlocks: Uppercut 1, Inhale 2, Star Finger 3, Time Stop / Quick move 4.
   The World unlocks: Kick 1, Time Stop / Time Skip 2, Time Stop Punch 3.
   Survival Time Stop begins at 0.25 seconds and trains through use up to five seconds.
-  Hamon training is separate and remains unported.
+  Hamon uses its separate original training system in Draft 15.
 
 This is an incomplete development port. The supported Stand HUD uses original source methods/assets;
-non-Stand UI, custom action-keybind slots and alternative HUD anchors remain pending.
-Barrage clashes, Stone Mask knife interaction, vampirism, further Stands/content, overlapping Time Stop/immunity, original
+custom action-keybind slots and alternative HUD anchors remain pending.
+Barrage clashes, Pillar Man evolution, separate zombie player powers, further Stands/content, overlapping Time Stop/immunity, original
 Time Stop shaders and crash recovery between separate allocation saves remain pending.
-See fabric/migration/STATUS.md, KNIFE_PARITY.md, TIME_STOP_PARITY.md and ORIGINAL_HUD_CAMERA.md for scope and source mappings.
+See fabric/migration/STATUS.md, VAMPIRISM_PARITY.md, KNIFE_PARITY.md, TIME_STOP_PARITY.md and ORIGINAL_HUD_CAMERA.md for scope and source mappings.
 Original assets and GPL-3.0 license retained; full source remains in the project.
 """)
     screenshots = FABRIC / "build/run/clientGameTest/screenshots"
@@ -172,7 +259,7 @@ Original assets and GPL-3.0 license retained; full source remains in the project
                                   *screenshots.glob("*hud*.png"), *screenshots.glob("*stamina*.png"),
                                   *screenshots.glob("*hit-reaction*.png"), *screenshots.glob("*time-actions*.png"),
                                   *screenshots.glob("*time-skip*.png"), *screenshots.glob("*time-stop-player*.png"),
-                                  *screenshots.glob("*time-stop-frozen*.png"), *screenshots.glob("*knives*.png")})
+                                  *screenshots.glob("*time-stop-frozen*.png"), *screenshots.glob("*knives*.png"), *screenshots.glob("*vampire*.png"), *screenshots.glob("*stand-aim*.png"), *screenshots.glob("*hamon*.png"), *screenshots.glob("*zombie*.png"), *screenshots.glob("*pillarman*.png"), *screenshots.glob("*equipment*.png"), *screenshots.glob("*stands*.png")})
     if playtest_screenshots:
         (destination / "screenshots").mkdir(exist_ok=True)
         for screenshot in playtest_screenshots:
@@ -181,6 +268,7 @@ Original assets and GPL-3.0 license retained; full source remains in the project
     manifest = {"version": version, "minecraft": properties["minecraft_version"], "fabric_loader": properties["loader_version"],
                 "fabric_api": properties["fabric_api_version"], "created_utc": datetime.now(timezone.utc).isoformat(),
                 "server_gametests_passed": int(match.group(1)), "client_gametest": "passed",
+                "client_scope": args.client_scope,
                 "manual_playtest": "pending", "sha256": hashes}
     (destination / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     (destination / "SHA256SUMS").write_text("".join(f"{digest}  {name}\n" for name, digest in hashes.items()))

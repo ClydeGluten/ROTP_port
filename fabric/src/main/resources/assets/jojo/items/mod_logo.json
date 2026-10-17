@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "jojo:item/mod_logo",
+    "model": {
+      "type": "jojo:mod_logo"
+    }
+  }
+}

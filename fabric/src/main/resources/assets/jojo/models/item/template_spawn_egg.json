@@ -1,0 +1,7 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "jojo:vanilla_1_16_5/item/spawn_egg",
+    "layer1": "jojo:vanilla_1_16_5/item/spawn_egg_overlay"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "jojo:gloves",
+    "jojo:soap"
+  ],
+  "result": {
+    "id": "jojo:bubble_gloves",
+    "components": {
+      "minecraft:custom_data": {
+        "Ammo": 500
+      }
+    }
+  }
+}

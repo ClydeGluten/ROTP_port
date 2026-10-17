@@ -239,7 +239,7 @@ public final class ActionHudClientGameTest implements FabricClientGameTest {
             context.getInput().releaseMouse(InputConstants.MOUSE_BUTTON_RIGHT);
             context.waitFor(c -> c.player.getAttachedOrCreate(StandAttachments.HUD).timeStop() > 0);
             context.takeScreenshot("hud-the-world-time-cooldown");
-            context.getInput().pressKey(key(context, "key.jojo.fabric.progress"));
+            context.getInput().pressKey(key(context, "jojo.key.hamon_skills_window"));
             context.waitFor(c -> c.gui.screen() instanceof ProgressionScreen);
             context.getInput().pressKey(InputConstants.KEY_END);
             context.takeScreenshot("hud-the-world-progression");

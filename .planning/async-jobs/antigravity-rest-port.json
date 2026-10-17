@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "job_id": "antigravity-rest-port",
+  "backend": "AntigravityCLI",
+  "model": "gemini-4-argon-high",
+  "status": "preparing",
+  "maximum_seconds": 18000,
+  "codex_fallback": false,
+  "submitted_at": "2026-10-17T22:43:48.614749+00:00",
+  "runner": "fabric/tools/run_antigravity_checkpoint.py",
+  "logs": ".codex/antigravity-rest-port",
+  "verification_command": "cat .planning/async-jobs/antigravity-rest-port.json"
+}

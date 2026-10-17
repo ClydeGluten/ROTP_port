@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "target": "26.3",
+  "package": "com.github.standobyte.jojo.fabric.client.model.generated",
+  "models": [
+    {"id": "hierophant_green", "class": "HierophantGreenGeometry", "format": "java", "source": "src/main/java/com/github/standobyte/jojo/client/render/entity/model/stand/HierophantGreenModel.java", "texture": "jojo:entity/stand/hierophant_green"},
+    {"id": "silver_chariot", "class": "SilverChariotGeometry", "format": "java", "source": "src/main/java/com/github/standobyte/jojo/client/render/entity/model/stand/SilverChariotModel.java", "texture": "jojo:entity/stand/silver_chariot"},
+    {"id": "silver_chariot_armor", "class": "SilverChariotArmorGeometry", "format": "java", "source": "src/main/java/com/github/standobyte/jojo/client/render/entity/model/stand/SilverChariotArmorLayerModel.java", "texture": "jojo:entity/stand/silver_chariot_armor"},
+    {"id": "magicians_red", "class": "MagiciansRedGeometry", "format": "java", "source": "src/main/java/com/github/standobyte/jojo/client/render/entity/model/stand/MagiciansRedModel.java", "texture": "jojo:entity/stand/magicians_red"},
+    {"id": "crazy_diamond", "class": "CrazyDiamondGeometry", "format": "java", "source": "src/main/java/com/github/standobyte/jojo/client/render/entity/model/stand/CrazyDiamondModel.java", "texture": "jojo:entity/stand/crazy_diamond"},
+    {"id": "gold_experience", "class": "GoldExperienceGeometry", "format": "bbmodel", "source": "src/main/resources/assets/jojo/bb/gold_experience.bbmodel", "texture": "jojo:entity/stand/gold_experience", "animation": "src/main/resources/assets/jojo/animations/gold_experience.animation.json"}
+  ]
+}

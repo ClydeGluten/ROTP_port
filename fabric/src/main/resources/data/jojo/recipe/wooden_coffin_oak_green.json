@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "jojo_wooden_coffin",
+  "pattern": [
+    "gld",
+    "www",
+    "lll"
+  ],
+  "key": {
+    "l": "#minecraft:logs",
+    "w": "minecraft:green_wool",
+    "g": "#c:ingots/gold",
+    "d": "#c:dyes/black"
+  },
+  "result": {
+    "id": "jojo:wooden_coffin_oak_green"
+  },
+  "category": "misc"
+}

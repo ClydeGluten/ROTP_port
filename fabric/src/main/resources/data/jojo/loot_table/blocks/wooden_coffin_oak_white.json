@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "condition": {
+            "type": "minecraft:match_block",
+            "blocks": "jojo:wooden_coffin_oak_white",
+            "state": {
+              "part": "head"
+            }
+          },
+          "name": "jojo:wooden_coffin_oak_white"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "display": {
+    "icon": {
+      "id": "jojo:meteoric_scrap",
+      "components": {
+        "minecraft:item_model": "jojo:mod_logo"
+      }
+    },
+    "title": {
+      "translate": "advancements.jojo.root.title"
+    },
+    "description": {
+      "translate": "advancements.jojo.root.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false,
+    "background": "jojo:textures/gui/advancements/jojo.png"
+  },
+  "criteria": {
+    "stand_afk": {
+      "trigger": "jojo:afk",
+      "conditions": {}
+    }
+  },
+  "requirements": [
+    [
+      "stand_afk"
+    ]
+  ]
+}

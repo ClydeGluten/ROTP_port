@@ -16,7 +16,7 @@ public record StandControlPayload(float sideways, float forward, float vertical,
     public static void initialize() {
         PayloadTypeRegistry.serverboundPlay().register(TYPE, CODEC);
         ServerPlayNetworking.registerGlobalReceiver(TYPE, (payload, context) -> {
-            var stand = StandService.current(context.player());
+            var stand = StandService.currentManifestation(context.player());
             if (stand != null && !TimeStopService.isFrozen(context.player()) && !TimeStopService.isCharging(context.player())) stand.control(payload.sideways, payload.forward, payload.vertical, payload.yaw, payload.pitch);
         });
     }

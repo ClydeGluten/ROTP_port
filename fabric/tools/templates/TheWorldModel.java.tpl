@@ -124,6 +124,14 @@ public class TheWorldModel extends EntityModel<StarPlatinumRenderState> {
         float progress = state.actionDuration > 0 ? Math.clamp(state.actionTicks / state.actionDuration, 0, 1) : 0;
         float time = start + (end - start) * progress;
         applyClip(clip, clip.wrap(time));
+        float pitch = state.meleePitch();
+        if (state.abilityKind == ABILITY_KICK) {
+            bones.get("leftLegXRot").xRot += pitch;
+            bones.get("rightLegXRot").xRot += pitch;
+        } else {
+            bones.get("leftArmXRot").xRot += pitch;
+            bones.get("rightArmXRot").xRot += pitch;
+        }
     }
 
     /**

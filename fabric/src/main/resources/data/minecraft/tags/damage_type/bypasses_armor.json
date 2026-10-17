@@ -1,1 +1,15 @@
-{"replace":false,"values":["jojo:stand_virus"]}
+{
+  "replace": false,
+  "values": [
+    "jojo:stand_virus",
+    "jojo:blood_drain",
+    "jojo:blood_gift",
+    "jojo:ultraviolet",
+    "jojo:stone_mask",
+    "jojo:hamon",
+    "jojo:cold",
+    "jojo:pillarman_detonation",
+    "jojo:rock_broken",
+    "jojo:rock_respawn"
+  ]
+}

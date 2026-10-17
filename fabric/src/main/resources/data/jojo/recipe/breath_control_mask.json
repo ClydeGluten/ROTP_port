@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "sis",
+    " b "
+  ],
+  "key": {
+    "s": "minecraft:string",
+    "i": "#c:ingots/iron",
+    "b": "minecraft:iron_bars"
+  },
+  "result": {
+    "id": "jojo:breath_control_mask",
+    "components": {
+      "minecraft:enchantments": {
+        "minecraft:binding_curse": 1
+      }
+    }
+  }
+}

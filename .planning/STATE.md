@@ -1,44 +1,81 @@
+---
+gsd_state_version: "1.0"
+current_phase: 5
+current_phase_name: Remaining Content and Compatibility
+current_plan: 22
+status: Antigravity-only continuation; Codex paused
+last_updated: "2026-10-17T22:42:09.968770+00:00"
+last_activity: 2026-10-18
+last_activity_desc: Draft 16.1 accepted; executing the remaining original-mod port. Draft18 packaged after258 required server checks and integrated/dedicated SC/HG flows plus actual180-tick late join. MR/CD/GE and shared integration in production.
+state_head: 69e4aaa4aa2b6d234bac292087fbfd9bea7eeae0
+progress:
+  total_phases: 5
+  completed_phases: 2
+  total_plans: 86
+  completed_plans: 29
+  percent: 40
+---
+
 # Project State
 
-## Project Reference
+## Latest delivery
 
-See `.planning/PROJECT.md`, root `AGENTS.md`, and `05-06-SUMMARY.md`.
+Draft18: `drafts/latest`, hash `3b76052b729af7bbfb16a99c87ed519f4e799307bbb642ffe692908d975b115c`;258 required server checks and integrated/dedicated StandExpansion client flow passed. Silver Chariot and Hierophant Green join natural awakening cycles. Current workspace is19-dev and may contain unverified next-batch changes; `rotptest` builds that workspace. A WIP checkpoint is authorized for the private origin by the latest wrap-up request. Full port remains incomplete.
 
-**Core value:** Playable, tested Fabric drafts with progressive original feature parity.
-**Current focus:** User playtest of verified Draft 11 knives and The World volley. User accepted Draft 10.
+## Handoff on 2026-10-18
+
+Codex implementation stopped at user request. AntigravityCLI alone may continue for available quota, at most five hours, then update GSD/repository and stop. See [full handoff](phases/05-remaining-content-and-compatibility/.continue-here.md) and `.planning/async-jobs/antigravity-rest-port.json`. Current19 compiles across main/client/GameTests; runtime acceptance remains open. Inactive Crazy Diamond44–46, Gold Experience48–50 and Mr President51–52 drafts are preserved under `fabric/migration/wip/`. No incomplete plan is marked complete.
 
 ## Current Position
 
 Phase: 5 of 5 (Remaining Content and Compatibility)
-Plan: 6 of 6 in current phase
-Status: Draft 11 implemented, verified and packaged. Broad PARITY requirements remain open.
-Last activity: 2026-10-14 — Draft 11 final combined build passed 146 server tests and ten client suites; model checks passed.
+Total Phases: 5
+Current Plan: 22
+Total Plans in Phase: 78
+Status: Antigravity-only continuation; Codex paused
+Last activity: 2026-10-18 — Draft 16.1 accepted. Plans 05-22–05-78 cover the remaining active original mod; Draft 17 first production wave is packaged; the next Stand wave is in integration.
+Progress: [████░░░░░░] 40%
 
-## Decisions and Constraints
+Two of five broad roadmap phases are complete. Twenty-nine scoped delivery plans are complete, including the twenty-one historical phase-5 delivery plans. Fifty-seven new plans cover the remaining active port. Phases 3/4/5 retain broader parity gaps; completed delivery plans do not imply a complete original-mod port.
 
-- Project-wide user directive: always prefer preserving original mod behavior. Original Forge sources/assets remain read-only; explicit custom requests, such as awakening generations and independent third-person orbit, remain intentional exceptions.
-- Branch `port/fabric-26.3`; private `ClydeGluten/ROTP_port`. User requested GitHub synchronization of progress through Draft 11 on 2026-10-14.
-- GSD uses existing-project inline execution. Chat remains concise using caveman. Dependencies and local-server EULA acceptance are authorized.
-- Original damage is immediate during Time Stop, including armor, attribution and death. Frozen momentum stacks and begins moving targets on thaw; only The World's specific extra heavy impact sound is deferred.
-- Both Stands now have Quick move, including original unsummoned/depleted-stamina use, front/behind targeting, ground/block placement, independent cooldowns, implied clocks and no Blink learning.
-- Time Stop Punch supports manual aim, Shift backshot, retained targets and recovery cancellation including barrage. Instant stamina debit precedes ordinary heavy cost at impact; its own cooldown is zero in Creative. Resolve multiplies truncated learning by four.
-- First manual-resume click leaves eleven ticks; another resumes immediately. The cue starts at ten ticks remaining.
-- M summon; O held manual; K mode; V/B held row focus with numbers/wheel; LMB/RMB actions; Alt bypass; backslash editor; H progression. Shift selects heavy/finisher, either Stand Quick move, or Time Stop Punch backshot. U/I remain direct shortcuts.
-- Independent F5 orbit, camera-relative movement, original supported HUD/editor, saved per-Stand layouts, settings migration and native unbound-key repair remain.
-- Network relocation retains vanilla packet baselines. Frozen corrections preserve player velocity. Disconnect cleanup is marshaled to the server thread; deterministic Netty-style and real-client tests cover the race.
-- Antigravity was not retried after prior quota failures. Existing coding agents handled isolated audits/tests/client work; parent integrated and verified.
-- Scope/source mapping: `fabric/migration/KNIFE_PARITY.md`, `TIME_STOP_PARITY.md`, `ORIGINAL_HUD_CAMERA.md`, `STATUS.md`. Overlapping stops, broader immunity/perception, shaders, vampire durations, full Resolve combat effects, Stone Mask/item tracking, Hamon, other content and allocation crash recovery remain open.
+Latest bundle: `drafts/latest/`, version `0.2.2-fabric.18-dev+upstream.0.2.2.2`. Mod SHA-256: `3b76052b729af7bbfb16a99c87ed519f4e799307bbb642ffe692908d975b115c`. Fish command `rotptest` launches current sources. Previous drafts remain preserved.
 
-- Knives preserve primary/remaining-stack World volleys, Shift single throws, original Gaussian spread/fixed hit margin/closest collision, cooldowns, fractional damage, recovery, recipe, singleton attributes, tool/dispenser behavior and original assets. Five lifetime Time Stop flight ticks; entity impacts wait for collision on thaw. Frozen knife rendering uses the current endpoint. Player stuck knives preserve count/decay and seeded placement.
+## Delivered
 
-## Verification and Playtest
+- Star Platinum and The World, supported original HUD/editor, independent third-person orbit and awakening allocation cycles.
+- Immediate Time Stop damage/deferred momentum, time actions, knives and vampire Stand bonuses.
+- Weak/full vampirism, original actions/passives, zombies, lifecycle/coffins, masks/Aja, blood/visuals/configuration and prior-Hamon memory.
+- Original Hamon natural learning, exercises/daily progression, breathing/stats/energy, all 46 skill definitions, five techniques and 31 actions/passives.
+- Original Hamon UI/HUD/animations/equipment, master/temple/map acquisition, glider, infusion, inheritance, advancements and configuration.
+- Draft 16 restores source damage/contact hooks, training rollover/cache timing, skill-window interactions, handed kick selection, infusion eligibility/costs, glider landing immunity and Molotov prediction.
 
-Final command: `JAVA_HOME=/home/alanno/.local/share/rotp-toolchains/jdk-25.0.4.1+1 ./fabric/gradlew -p fabric build runClientGameTest -PacceptMinecraftEula=true --console=plain`.
+## Verification
 
-Evidence: `/tmp/rotp-draft11-verification2.log`, **BUILD SUCCESSFUL in 3m 28s**. Passed **76 core tests, 146 required server GameTests, 29 model checks and ten real-client suites**. Actual singleplayer/dedicated knife input, item models, volleys, stopped-time flight, synchronized/rendered endpoints, deferred hits, thaw motion and stuck-player rendering passed alongside prior camera/HUD/controls/progression/time-action regressions. Three source-identified physics regressions failed before the fixes and pass afterward; evidence is preserved in the bundle. Inventory, frozen-projectile and stuck-player screenshots were inspected.
+Draft 17: `/tmp/rotp-draft17-verification2.log` passed all **247 required server GameTests**, build/core checks and focused integrated/dedicated `RemainingContentClientGameTest` flows (**BUILD SUCCESSFUL in 1m30s**). Packaging passed29 existing Stand model checks. Actual client input covers retained SP/TW attacks, nine-second vampire Time Stop, zombie controls, Blade Hat, Tommy Gun, all Pillar modes and possession entry/exit. The180-tick late-join case and fresh temple-generation visual review remain open. Source additions after packaging are not covered by that artifact. Details: `fabric/migration/REST_DELIVERY_EVIDENCE.md`.
 
-`rotptest --dry-run` passes. Draft 11 manual playtest remains pending. Original Forge sources and user data under `fabric/run` were untouched.
+Accepted Draft 16.1 evidence:
 
-## Session Continuity
+`/tmp/rotp-draft16-1-verification2.log`: **BUILD SUCCESSFUL in 56s**, **206 required server GameTests passed**, and the focused Hamon client flow passed in fresh integrated and dedicated worlds. The unchanged **94 core tests** remained up to date; packaging passed **29 model checks**.
 
-Latest bundle: `drafts/latest/`, version `0.2.2-fabric.11-dev+upstream.0.2.2.2`. Mod SHA-256: `6f2c3ae2b8bea5355dcee7b526779908060a717a1d5c199778286e6cdc408a8b`. Earlier drafts remain preserved. `fabric/build/run` is restored to an ordinary directory containing final logs/screenshots; previous test data remains in `fabric/build/run.disk-before-draft11`. Final temporary evidence remains in `/tmp/rotp-draft11-tests-pgzwathw`. Fish command `rotptest` launches the current development sources. Await this milestone's playtest before starting the next slice. Hamon remains later.
+The real water/lava movement regression and client surface checks address the user's reported crash. Original `src/` matches HEAD. All 324 user-save files retain their pre-fix sizes and modification timestamps; automation used `fabric/build/run`. Packaged hashes and launcher dry-run pass. User reports Draft 16.1 works well; Draft 17 is verified only for its documented scope; the full port remains incomplete. The Draft 16 scoped report is historical; this correction is documented in `fabric/migration/HAMON_LIQUID_WALKING_FIX.md`.
+
+## Standing decisions
+
+- Preserve original behavior. Forge `src/` remains read-only. Allocation cycles and independent orbit are user exceptions.
+- Branch `port/fabric-26.3`; private `ClydeGluten/ROTP_port`. HEAD `69e4aaa4a` through Draft 11. Drafts 12–18 and incomplete19 are included in the authorized wrap-up checkpoint; inspect git log for its hash.
+- GSD workflow, caveman chat, lean validation; dependencies and local test-server EULA authorized.
+- Actual AntigravityCLI audits contributed action/content findings. Its progression coding attempt timed out without edits; built-in workers and root implemented the corrections. Root owned the Gradle lane.
+- REA was not identifiable among installed commands, skills or MCP tools. Original-source comparison proceeded while clarification remains unanswered; no REA execution is claimed.
+- M summon, K Stand mode, J Hamon/vampire mode, H Hamon skills or other power overview, middle mouse breathing, V/B row focus, mouse actions, Alt bypass, Shift+Space leap.
+
+## Next work
+
+User accepted Draft 16.1 on 2026-10-18 and authorized reverse engineering/adaptation of the rest of the active original mod. First execution wave: zombie player, Pillar Man base, equipment and generalized Stand/species integration. Draft17 closes a scoped first delivery; per-plan followups and full-port completion stay open. Guide: `fabric/migration/HAMON_PLAYTEST.md`. Broader roadmap: Pillar Man evolution, zombie-player power, other Stands/world content, broader Time Stop perception/shaders, barrage clashes, Forge save migration, compatibility and allocation crash recovery. Cross-links to Hermit Purple/Crazy Diamond/Magician's Red remain unavailable until those Stands exist. Command-driven coffin spawn setting remains an unverified compatibility edge.
+
+Ledgers: `fabric/migration/HAMON_SOURCE_REVIEW.md` and the four domain parity inventories. Scoped `05-DRAFT16-VERIFICATION.md` found no blockers across the 14 corrections; manual presentation checks remain. Global `05-VERIFICATION.md` remains `gaps_found` for broad remaining content.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Status | Directory |
+|---|-------------|------|--------|--------|-----------|
+| 261017-wss | Fix liquid-walking crash; restore original movement; Draft 16.1 staged without commit | 2026-10-17 | staged (no commit) | verified | [261017-wss-fix-hamon-liquid-walking-collision-recur](./quick/261017-wss-fix-hamon-liquid-walking-collision-recur/) |

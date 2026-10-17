@@ -38,7 +38,7 @@ public final class ProgressionClientGameTest implements FabricClientGameTest {
                 }
             });
             context.takeScreenshot("progression-locked-feedback");
-            context.getInput().pressKey(net.minecraft.client.KeyMapping.get("key.jojo.fabric.progress"));
+            context.getInput().pressKey(net.minecraft.client.KeyMapping.get("jojo.key.hamon_skills_window"));
             context.waitFor(client -> client.gui.screen() instanceof ProgressionScreen);
             context.takeScreenshot("progression-new-survival");
             context.getInput().pressKey(InputConstants.KEY_END);
@@ -74,7 +74,7 @@ public final class ProgressionClientGameTest implements FabricClientGameTest {
                 var state = ProgressionService.state(server.getPlayerList().getPlayer(id));
                 if (state.trainingPoints() != 1.25F || state.timeStopTicks() != 6) throw new AssertionError("Actual Time Stop key awarded wrong training");
             });
-            context.getInput().pressKey(net.minecraft.client.KeyMapping.get("key.jojo.fabric.progress"));
+            context.getInput().pressKey(net.minecraft.client.KeyMapping.get("jojo.key.hamon_skills_window"));
             context.waitFor(client -> client.gui.screen() instanceof ProgressionScreen);
             context.getInput().pressKey(InputConstants.KEY_END);
             context.takeScreenshot("progression-trained-time-stop");
@@ -87,7 +87,7 @@ public final class ProgressionClientGameTest implements FabricClientGameTest {
                 var state = client.player.getAttachedOrCreate(StandAttachments.RESOLVE);
                 if (state.trainingPoints() != 1.25F || state.timeStopTicks() != 6) throw new AssertionError("Reload lost fractional training");
             });
-            context.getInput().pressKey(net.minecraft.client.KeyMapping.get("key.jojo.fabric.progress"));
+            context.getInput().pressKey(net.minecraft.client.KeyMapping.get("jojo.key.hamon_skills_window"));
             context.waitFor(client -> client.gui.screen() instanceof ProgressionScreen);
             context.takeScreenshot("progression-restored");
         }
@@ -103,7 +103,7 @@ public final class ProgressionClientGameTest implements FabricClientGameTest {
                     ProgressionService.setLevel(player, 3); ProgressionService.setTraining(player, 12.5F);
                 });
                 context.waitFor(client -> client.player.getAttachedOrCreate(StandAttachments.RESOLVE).level() == 3);
-                context.getInput().pressKey(net.minecraft.client.KeyMapping.get("key.jojo.fabric.progress"));
+                context.getInput().pressKey(net.minecraft.client.KeyMapping.get("jojo.key.hamon_skills_window"));
                 context.waitFor(client -> client.gui.screen() instanceof ProgressionScreen);
                 context.takeScreenshot("progression-dedicated-unlocks");
             }

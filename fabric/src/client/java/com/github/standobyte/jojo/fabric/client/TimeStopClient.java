@@ -24,17 +24,18 @@ public final class TimeStopClient {
         int ticks;
         Stop(TimeStopPayload payload) {
             origin = payload.origin(); dimension = payload.dimension(); caster = payload.casterUuid();
-            casterId = payload.casterId(); ticks = Math.clamp(payload.ticksRemaining(), 0, TimeStopService.STOP_TICKS);
+            casterId = payload.casterId(); ticks = Math.clamp(payload.ticksRemaining(), 0, TimeStopService.MAX_STOP_TICKS);
         }
         boolean contains(Entity entity) {
             return dimension.equals(entity.level().dimension().identifier()) && contains(entity.blockPosition());
         }
         boolean contains(BlockPos pos) {
-            return Math.abs((pos.getX() >> 4) - (origin.getX() >> 4)) <= TimeStopService.CHUNK_RANGE
-                    && Math.abs((pos.getZ() >> 4) - (origin.getZ() >> 4)) <= TimeStopService.CHUNK_RANGE;
+            return com.github.standobyte.jojo.fabric.StandConfig.current(true).timeStopChunkRange()==0 || Math.abs((pos.getX() >> 4) - (origin.getX() >> 4)) <= com.github.standobyte.jojo.fabric.StandConfig.current(true).timeStopChunkRange()
+                    && Math.abs((pos.getZ() >> 4) - (origin.getZ() >> 4)) <= com.github.standobyte.jojo.fabric.StandConfig.current(true).timeStopChunkRange();
         }
         boolean immune(Entity entity) {
-            return entity.getUUID().equals(caster) || entity.getId() == casterId
+            return entity instanceof net.minecraft.world.entity.monster.Enderman && com.github.standobyte.jojo.fabric.StandConfig.current(true).endermenBeyondTimeSpace()
+                    || entity.getUUID().equals(caster) || entity.getId() == casterId
                     || entity instanceof StarPlatinumEntity stand && stand.ownerId() == casterId;
         }
     }
@@ -66,6 +67,7 @@ public final class TimeStopClient {
         return player == null ? 0 : STOPS.values().stream().filter(stop -> stop.contains(player)).mapToInt(stop -> stop.ticks).max().orElse(0);
     }
     public static boolean isFrozen(Entity entity) {
+        if (entity instanceof com.github.standobyte.jojo.fabric.SpaceRipperStingyEyesEntity beam && beam.bound()) return isFrozen(beam.boundOwner());
         return entity != null && !entity.isRemoved()
                 && (!(entity instanceof com.github.standobyte.jojo.fabric.KnifeEntity knife) || knife.getTimeStopFlightTicks() == 0) && STOPS.values().stream().anyMatch(stop -> stop.contains(entity) && !stop.immune(entity));
     }

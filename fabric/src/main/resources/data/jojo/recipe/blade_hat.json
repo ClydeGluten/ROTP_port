@@ -1,0 +1,7 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "category":"equipment",
+  "pattern":[" w ","iwi"],
+  "key":{"w":"minecraft:black_wool","i":"#c:ingots/iron"},
+  "result":{"id":"jojo:blade_hat","count":1}
+}

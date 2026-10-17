@@ -25,6 +25,7 @@ public abstract class ServerLevelMixin {
         if (entity instanceof com.github.standobyte.jojo.fabric.KnifeEntity knife)
             knife.setTimeStopped(TimeStopService.isTimeStopped(entity.level(), entity.chunkPosition()));
         if (TimeStopService.isFrozen(entity)) {
+            if(entity instanceof com.github.standobyte.jojo.fabric.stand.hierophant.HGBarrierEntity barrier)barrier.tickFrozen();
             if (entity instanceof LivingEntity living && !(living instanceof net.minecraft.server.level.ServerPlayer) && living.damageCooldownTime > 0) living.damageCooldownTime--;
             for (Entity passenger : entity.getPassengers()) {
                 tickPassenger(entity, passenger);
@@ -38,6 +39,7 @@ public abstract class ServerLevelMixin {
         if (passenger instanceof com.github.standobyte.jojo.fabric.KnifeEntity knife)
             knife.setTimeStopped(TimeStopService.isTimeStopped(passenger.level(), passenger.chunkPosition()));
         if (TimeStopService.isFrozen(passenger)) {
+            if(passenger instanceof com.github.standobyte.jojo.fabric.stand.hierophant.HGBarrierEntity barrier)barrier.tickFrozen();
             if (passenger instanceof LivingEntity living && !(living instanceof net.minecraft.server.level.ServerPlayer) && living.damageCooldownTime > 0) living.damageCooldownTime--;
             ci.cancel();
         }

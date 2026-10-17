@@ -53,7 +53,7 @@ Local Stand/finger opacity remains 16% in first person and when the Stand crosse
 - The original active radial indicator uses custom textured quads. This port uses the original baked radial atlas path retained in upstream `renderRadialIndicator`: the same artwork in one-degree fill steps. It does not claim to copy the dynamic-quad implementation.
 - New GUI extraction accepts integer rectangles. `OriginalHudDraw` preserves fractional folding geometry/UVs with a 1/1024-pixel transform adapter.
 - There is no gameplay action queue, so the original queued-action brightness state is absent. Availability reflects current unlocks, cooldowns, manifestation, stamina and recovery rather than every upstream action-condition class.
-- This restores default Stand presentation, not Hamon/non-Stand UI, custom action-keybind slots, leap/bow widgets, skin selection, warning panels or alternate anchors/orientations.
+- Draft 12 also restores the supported vampire non-Stand mode, original blood bar and separate saved action layout. Hamon UI, custom action-keybind slots, leap/bow widgets, skin selection, warning panels and alternate anchors/orientations remain pending.
 - Original bar-cost previews are commented out in the source and remain absent. Existing Arrow infection feedback and regional Time Stop tint/countdown are retained.
 - Camera settings and compatibility with external camera/movement mods need further work. This is not a bundled or complete port of Better Third Person.
 

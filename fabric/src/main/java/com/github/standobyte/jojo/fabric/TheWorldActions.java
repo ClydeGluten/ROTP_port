@@ -22,7 +22,7 @@ public final class TheWorldActions {
     public static boolean blink(ServerPlayer player) {
         if (player == null || !player.isAlive() || player.isSpectator()) return false;
         var progress = player.getAttachedOrCreate(StandAttachments.PROGRESS);
-        if (!progress.hasStand() || !ProgressionService.require(player, progress.timeStopUnlock(), "key.jojo.fabric.blink")) return false;
+        if (!progress.canStopTime() || !ProgressionService.require(player, progress.timeStopUnlock(), "key.jojo.fabric.blink")) return false;
         // Original requirements check the instant action's own cooldown. A full Time Stop's longer
         // cooldown is independent; its instant variation becomes usable after one sixth that time.
         if (AbilityCooldowns.remaining(player, COOLDOWN_BLINK) > 0 || TimeStopService.isFrozen(player)

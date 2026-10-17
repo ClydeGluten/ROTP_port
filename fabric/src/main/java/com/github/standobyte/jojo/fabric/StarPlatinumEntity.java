@@ -27,7 +27,7 @@ import net.minecraft.world.damagesource.DamageType;
 import java.util.UUID;
 
 /** First migrated manifestation: following, server-authoritative light/heavy punches and damage transfer. */
-public final class StarPlatinumEntity extends Mob {
+public class StarPlatinumEntity extends Mob implements StandManifestation {
     private static final EntityDataAccessor<Integer> OWNER = SynchedEntityData.defineId(StarPlatinumEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> PHASE = SynchedEntityData.defineId(StarPlatinumEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> HEAVY = SynchedEntityData.defineId(StarPlatinumEntity.class, EntityDataSerializers.BOOLEAN);
@@ -89,8 +89,13 @@ public final class StarPlatinumEntity extends Mob {
     }
 
     public boolean isTheWorld() { return getType() == RipplesFabric.THE_WORLD; }
-    public StandStats standStats() { return isTheWorld() ? StandStats.THE_WORLD : StandStats.STAR_PLATINUM; }
-    public String standName() { return isTheWorld() ? "the_world" : "star_platinum"; }
+    @Override public Mob entity() { return this; }
+    @Override public com.github.standobyte.jojo.core.StandDefinitions.Definition definition() {
+        return com.github.standobyte.jojo.core.StandDefinitions.definition(
+                net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(getType()).toString());
+    }
+    public StandStats standStats() { return definition().stats(); }
+    public String standName() { return definition().path(); }
     public int uiRecoveryTicks() { return Math.max(action.phase() == AttackTimeline.Phase.RECOVERY ? action.ticksRemaining() : 0,
             Math.max(held.recoveryTicks(), held.guardBreakTicks())); }
     public int ownerId() { return entityData.get(OWNER); }
@@ -123,7 +128,7 @@ public final class StarPlatinumEntity extends Mob {
     }
 
     public boolean beginSpecial(int phase) {
-        if (isTheWorld()) return false;
+        if (!definition().id().equals(StandProgress.STAR_PLATINUM)) return false;
         ServerPlayer player = owner();
         if (player == null || !player.isAlive() || player.isSpectator() || !available()
                 || !player.getAttachedOrCreate(StandAttachments.PROGRESS).hasStand()
@@ -133,9 +138,9 @@ public final class StarPlatinumEntity extends Mob {
         if (!ProgressionService.require(player, required, phase == PHASE_FINGER ? "key.jojo.fabric.finger" : "key.jojo.fabric.inhale")) return false;
         float cost = phase == PHASE_FINGER ? 375 : phase == PHASE_INHALE ? 2 : 0;
         var progress = player.getAttachedOrCreate(StandAttachments.PROGRESS);
-        if (!player.isCreative() && progress.stamina() < cost) return false;
+        if (!StandConfig.staminaFree(player) && progress.stamina() < cost) return false;
         if (phase == PHASE_FINGER) {
-            if (!player.isCreative()) player.setAttached(StandAttachments.PROGRESS, progress.withStamina(progress.stamina() - cost));
+            if (!StandConfig.staminaFree(player)) player.setAttached(StandAttachments.PROGRESS, progress.withStamina(progress.stamina() - cost));
             AbilityCooldowns.start(player, phase, ProgressionService.state(player).isBurst() ? 20 : 80);
         }
         action.cancel(); special = phase; specialElapsed = 0; specialLease = 12;
@@ -146,7 +151,7 @@ public final class StarPlatinumEntity extends Mob {
     }
 
     public boolean beginUppercut() {
-        if (owner() == null || !ProgressionService.require(owner(), 1, isTheWorld() ? "jojo.fabric.action.kick" : "key.jojo.fabric.uppercut")) return false;
+        if (owner() == null || !StandParts.has(owner(), isTheWorld() ? StandParts.Part.LEGS : StandParts.Part.ARMS) || !ProgressionService.require(owner(), 1, isTheWorld() ? "jojo.fabric.action.kick" : "key.jojo.fabric.uppercut")) return false;
         if (!beginAttack(true)) return false;
         entityData.set(ABILITY, 1);
         return true;
@@ -186,7 +191,7 @@ public final class StarPlatinumEntity extends Mob {
         float ticking = TheWorldActions.tickingCost(player);
         // The instant component reserves 90 before the task starts. StandEntityTask charges
         // the ordinary heavy cost only when PERFORM begins; consumption may clamp to zero.
-        if (!player.isCreative() && !ProgressionService.state(player).isBurst())
+        if (!StandConfig.staminaFree(player) && !ProgressionService.state(player).isBurst())
             budget = Math.clamp((int) Math.floor((progress.stamina() - 90F) / ticking), 0, budget);
         int impliedWindup = interruptRecovery ? 30 : 10;
         Vec3 delta = pos.subtract(position());
@@ -200,7 +205,7 @@ public final class StarPlatinumEntity extends Mob {
         if (interruptRecovery) action.cancel();
         if (heldRecovery) held.cancelRecovery();
         if (!action.start(true, 5, 1, recovery)) return false;
-        if (!player.isCreative()) player.setAttached(StandAttachments.PROGRESS, progress.withStamina(progress.stamina() - cost));
+        if (!StandConfig.staminaFree(player)) player.setAttached(StandAttachments.PROGRESS, progress.withStamina(progress.stamina() - cost));
         setPos(pos);
         setYRot(aiming.getYRot());
         setXRot(aiming.getXRot());
@@ -211,7 +216,7 @@ public final class StarPlatinumEntity extends Mob {
         entityData.set(ABILITY, 2);
         TheWorldActions.skipTicks(player, this, elapsed);
         AbilityCooldowns.start(player, 12, player.isCreative() ? 0 : 50);
-        if (!player.isCreative()) {
+        if (!StandConfig.skipsTraining(player)) {
             var learned = ProgressionService.state(player);
             ProgressionService.update(player, learned.withTraining(Math.min(95, learned.trainingPoints() + (int) (elapsed * 0.1F) * (learned.isBurst() ? 4 : 1))));
         }
@@ -251,7 +256,7 @@ public final class StarPlatinumEntity extends Mob {
         ServerPlayer player = owner();
         if (player == null || !player.isAlive() || player.isSpectator() || !available()) return false;
         StandProgress progress = player.getAttachedOrCreate(StandAttachments.PROGRESS);
-        if (!progress.hasStand() || (!player.isCreative() && progress.stamina() < (guard ? 1 : HeldCombat.BARRAGE_STAMINA_PER_TICK))) return false;
+        if (!progress.hasStand() || (!StandConfig.staminaFree(player) && progress.stamina() < (guard ? 1 : HeldCombat.BARRAGE_STAMINA_PER_TICK))) return false;
         double durability = standStats().durability(progress.development());
         double speed = standStats().speed(progress.development());
         boolean started = held.start(guard ? HeldCombat.Mode.GUARD : HeldCombat.Mode.BARRAGE,
@@ -274,7 +279,7 @@ public final class StarPlatinumEntity extends Mob {
         StandProgress progress = player.getAttachedOrCreate(StandAttachments.PROGRESS);
         if (!progress.hasStand()) return false;
         float cost = heavy ? 50F : 10F;
-        if (!player.isCreative() && progress.stamina() < cost) {
+        if (!StandConfig.staminaFree(player) && progress.stamina() < cost) {
             player.setAttached(StandAttachments.PROGRESS, progress.withStamina(0));
             return false;
         }
@@ -284,10 +289,12 @@ public final class StarPlatinumEntity extends Mob {
         int perform = heavy ? 1 : StandStatFormulas.getLightAttackRecovery(speed, finisher);
         int recovery = heavy ? StandStatFormulas.getHeavyAttackRecovery(speed, finisher) : perform * 4;
         if (!action.start(heavy, windup, perform, recovery)) return false;
-        if (!player.isCreative()) player.setAttached(StandAttachments.PROGRESS, progress.withStamina(progress.stamina() - cost));
+        if (!StandConfig.staminaFree(player)) player.setAttached(StandAttachments.PROGRESS, progress.withStamina(progress.stamina() - cost));
         previousLight = !heavy;
         entityData.set(HEAVY, heavy);
-        entityData.set(ABILITY, heavy && finisher >= 0.5F && ProgressionService.unlocked(player, 1) ? 1 : 0);
+        boolean finisherPart = StandParts.has(player, isTheWorld() ? StandParts.Part.LEGS : StandParts.Part.ARMS);
+        boolean forceFinisher = isTheWorld() && !StandParts.has(player, StandParts.Part.ARMS);
+        entityData.set(ABILITY, heavy && finisherPart && (forceFinisher || finisher >= .5F && ProgressionService.unlocked(player, 1)) ? 1 : 0);
         if (heavy) {
             heavyFinisher = finisher;
             finisher = Math.max(0, finisher - 0.51F);
@@ -323,8 +330,9 @@ public final class StarPlatinumEntity extends Mob {
                 Vec3 forward = Vec3.directionFromRotation(0, player.getYRot());
                 Vec3 side = new Vec3(-forward.z, 0, forward.x);
                 boolean attacking = action.phase() != AttackTimeline.Phase.IDLE || held.mode() != HeldCombat.Mode.NONE || special != 0 || TimeStopService.isCharging(player);
-                Vec3 offset = attacking ? forward.scale(0.8) : forward.scale(-0.6).add(side.scale(0.8));
-                setPos(player.position().add(offset).add(0, 0.05, 0));
+                boolean melee = action.phase() != AttackTimeline.Phase.IDLE || held.mode() == HeldCombat.Mode.BARRAGE;
+                Vec3 offset = melee ? meleeOffset(player) : attacking ? forward.scale(0.8) : forward.scale(-0.6).add(side.scale(0.8));
+                setPos(player.position().add(offset).add(0, melee ? 0 : 0.05, 0));
                 setYRot(player.getYRot()); setXRot(player.getXRot());
             }
         }
@@ -344,6 +352,27 @@ public final class StarPlatinumEntity extends Mob {
             if (abilityKind() != 0) entityData.set(ABILITY, 0);
             timePunchTarget = null;
         }
+    }
+
+    /** StandEntityAction.front3dOffset/offsetToTarget and StandRelativeOffset.withXRot. */
+    private Vec3 meleeOffset(ServerPlayer player) {
+        double min = Math.min(0.5, standStats().effectiveRange());
+        double max = held.mode() == HeldCombat.Mode.BARRAGE ? Math.min(1.5, standStats().effectiveRange())
+                : Math.min(2, standStats().maxRange());
+        LivingEntity target = findTarget(player);
+        Vec3 targetPos = target == null ? null : target.getEyePosition();
+        double backAway = target == null ? 1.5 : 1 + target.getBbWidth() / 2.0;
+        if (targetPos == null) {
+            var wall = level().clip(new ClipContext(player.getEyePosition(), player.getEyePosition().add(player.getLookAngle().scale(max)),
+                    ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+            if (wall.getType() != HitResult.Type.MISS) targetPos = wall.getLocation();
+        }
+        double offset = max;
+        if (targetPos != null) {
+            Vec3 delta = targetPos.subtract(player.position());
+            offset = Math.clamp(Math.sqrt(delta.x * delta.x + delta.z * delta.z) - backAway, min, max);
+        }
+        return player.getLookAngle().scale(offset);
     }
 
     private void syncAction() {
@@ -404,7 +433,7 @@ public final class StarPlatinumEntity extends Mob {
     }
 
     private void strike(ServerPlayer player) {
-        if (abilityKind() == 2 && !player.isCreative()) {
+        if (abilityKind() == 2 && !StandConfig.staminaFree(player)) {
             var progress = player.getAttachedOrCreate(StandAttachments.PROGRESS);
             player.setAttached(StandAttachments.PROGRESS, progress.withStamina(progress.stamina() - 50F));
         }
@@ -429,7 +458,7 @@ public final class StarPlatinumEntity extends Mob {
                 float armorPiercing = (float) power * 0.015F;
                 damage = addArmorPiercing(damage, armorPiercing, target, source);
             }
-            boolean hit = StandDamage.hurt((ServerLevel) level(), target, source, damage);
+            boolean hit = StandDamage.standHurt((ServerLevel) level(), target, source, damage);
             if (hit && !action.heavy()) finisher = Math.min(1, finisher + 0.1F);
             if (hit && action.heavy()) {
                 Vec3 direction = attackDirection(player);
@@ -449,7 +478,7 @@ public final class StarPlatinumEntity extends Mob {
                         if (nearby.distanceToSqr(this) <= standStats().effectiveRange() * standStats().effectiveRange()
                                 && level().clip(new ClipContext(target.getEyePosition(), nearby.getEyePosition(), ClipContext.Block.COLLIDER,
                                         ClipContext.Fluid.NONE, this)).getType() == HitResult.Type.MISS) {
-                            StandDamage.hurt((ServerLevel) level(), nearby, source, damage * 0.5F);
+                            StandDamage.standHurt((ServerLevel) level(), nearby, source, damage * 0.5F);
                         }
                     }
                 }
@@ -495,7 +524,7 @@ public final class StarPlatinumEntity extends Mob {
             Vec3 origin = getEyePosition().add(0, -0.2, 0);
             LivingEntity target = findTarget(player, origin, attackDirection(player), reach);
             if (target != null && fingerHits.add(target.getId())) {
-                StandDamage.hurt((ServerLevel) level(), target, new DamageSource(damageSources().playerAttack(player).typeHolder(), this, player), 4.5F);
+                StandDamage.standHurt((ServerLevel) level(), target, new DamageSource(damageSources().playerAttack(player).typeHolder(), this, player), 4.5F);
                 playOriginal("star_platinum_punch_light");
             }
             if (specialElapsed >= 20) endSpecial();
@@ -504,7 +533,7 @@ public final class StarPlatinumEntity extends Mob {
         if (--specialLease <= 0 || (special == PHASE_INHALE && specialElapsed > 80)) { endSpecial(); return; }
         if (special == PHASE_ZOOM) return;
         var progress = player.getAttachedOrCreate(StandAttachments.PROGRESS);
-        if (!player.isCreative()) {
+        if (!StandConfig.staminaFree(player)) {
             if (progress.stamina() < 2) { endSpecial(); return; }
             player.setAttached(StandAttachments.PROGRESS, progress.withStamina(progress.stamina() - 2));
         }
@@ -528,20 +557,20 @@ public final class StarPlatinumEntity extends Mob {
 
     private void tickHeld(ServerPlayer player) {
         StandProgress progress = player.getAttachedOrCreate(StandAttachments.PROGRESS);
-        if (held.mode() == HeldCombat.Mode.BARRAGE && !player.isCreative()
+        if (held.mode() == HeldCombat.Mode.BARRAGE && !StandConfig.staminaFree(player)
                 && progress.stamina() < HeldCombat.BARRAGE_STAMINA_PER_TICK) held.stop();
         int swings = held.tick(StandStatFormulas.getBarrageHitsPerSecond(standStats().speed(progress.development())));
         if (held.mode() != HeldCombat.Mode.BARRAGE) return;
-        if (!player.isCreative()) {
+        if (!StandConfig.staminaFree(player)) {
             player.setAttached(StandAttachments.PROGRESS, progress.withStamina(progress.stamina() - HeldCombat.BARRAGE_STAMINA_PER_TICK));
         }
         if (held.elapsed() % 10 == 1) playOriginal("star_platinum_ora");
         LivingEntity target = swings > 0 ? findTarget(player) : null;
         if (target == null) return;
         float damage = swings * StandStatFormulas.getBarrageHitDamage(standStats().power(progress.development()),
-                standStats().precision());
+                standStats().precision(progress.development()));
         DamageSource source = new DamageSource(level().registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(BARRAGE_DAMAGE), this, player);
-        if (StandDamage.hurt((ServerLevel) level(), target, source, damage)) {
+        if (StandDamage.standHurt((ServerLevel) level(), target, source, damage)) {
             // Upstream groups multiple swings into one hit per tick and uses reduced knockback during the rush.
             // Its normal rush still pushes slightly: suppress automatic knockback via the damage
             // tag, then apply the original reduced impulse once, respecting target resistance.
@@ -574,7 +603,7 @@ public final class StarPlatinumEntity extends Mob {
             StandProgress progress = player.getAttachedOrCreate(StandAttachments.PROGRESS);
             double durability = standStats().durability(progress.development());
             double power = standStats().power(progress.development());
-            return damage * (1 - StandStatFormulas.getPhysicalResistance(durability, power, 0, damage, 1));
+            return damage * (1 - StandStatFormulas.getPhysicalResistance(durability, power, 0, damage, StandConfig.server().standResistanceMultiplier()));
         }
         return damage;
     }
@@ -583,8 +612,8 @@ public final class StarPlatinumEntity extends Mob {
         StandProgress progress = player.getAttachedOrCreate(StandAttachments.PROGRESS);
         double durability = standStats().durability(progress.development());
         HeldCombat.GuardResult result = HeldCombat.guard(damage, progress.stamina(), durability,
-                standStats().power(progress.development()), player.isCreative());
-        if (!player.isCreative()) player.setAttached(StandAttachments.PROGRESS, progress.withStamina(result.stamina()));
+                standStats().power(progress.development()), StandConfig.staminaFree(player), StandConfig.server().standResistanceMultiplier());
+        if (!StandConfig.staminaFree(player)) player.setAttached(StandAttachments.PROGRESS, progress.withStamina(result.stamina()));
         if (result.broken()) {
             held.breakGuard(StandStatFormulas.getBlockingBreakTicks(durability));
             player.sendOverlayMessage(net.minecraft.network.chat.Component.translatable("jojo.fabric.guard_broken"));
@@ -607,7 +636,7 @@ public final class StarPlatinumEntity extends Mob {
 
     @Override public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
         ServerPlayer player = owner();
-        if (player == null || source.getEntity() == player || source.getEntity() == this) return false;
+        if (player == null || !StandDamage.canDamageBody(this,source)) return false;
         // The player's accepted-hit hook applies resistance once. Rejected cooldown hits must not spend guard stamina.
         transferringDamage = true;
         try { return player.hurtServer(level, source, amount); }

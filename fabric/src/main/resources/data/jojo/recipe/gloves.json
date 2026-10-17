@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "l l",
+    "n n"
+  ],
+  "key": {
+    "l": "#c:leathers",
+    "n": "#c:nuggets/gold"
+  },
+  "result": {
+    "id": "jojo:gloves"
+  }
+}

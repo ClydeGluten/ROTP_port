@@ -1,0 +1,212 @@
+{
+  "version": 1,
+  "stand": "jojo:magicians_red",
+  "geometry_manifest": "fabric/migration/remaining-model-manifest.json",
+  "generated_geometry": {
+    "body": {
+      "source": "src/main/java/com/github/standobyte/jojo/client/render/entity/model/stand/MagiciansRedModel.java",
+      "class": "MagiciansRedGeometry",
+      "parts": 30,
+      "cubes": 42,
+      "texture_size": [
+        128,
+        128
+      ]
+    },
+    "detector": {
+      "source": "src/main/java/com/github/standobyte/jojo/client/render/entity/model/MRDetectorModel.java",
+      "cubes": 3,
+      "texture_size": [
+        32,
+        32
+      ]
+    },
+    "ankh": "Original seven procedural flames; special renders at0.5 scale",
+    "bind": "Original repeating3-pixel north-facing flame segments"
+  },
+  "resources": [
+    {
+      "source": "src/main/resources/assets/jojo/models/item/item_icon_mr_fireball.json",
+      "target": "assets/jojo/models/item/item_icon_mr_fireball.json",
+      "sha256": "a1bd6af582e1dc833a9b0bd3409458125eb29cc8841c7529cb285dfedb72440d",
+      "pipeline": "convertRemainingResources"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/particles/flame.json",
+      "target": "assets/jojo/particles/flame.json",
+      "sha256": "e446a942094d6be3b90cdc96f5dbe3b6eb631b650635fbf59ac2a8b997e65974",
+      "pipeline": "convertRemainingResources"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/magicians_red_block.png",
+      "target": "assets/jojo/textures/action/magicians_red_block.png",
+      "sha256": "4640e50cb48bdd9a66fe623704769d0de08b8877f7b8ed405d8d0eccbdeed374",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/magicians_red_ch_special.png",
+      "target": "assets/jojo/textures/action/magicians_red_ch_special.png",
+      "sha256": "561889bcbd910e8b2d08f34fad410c400ae9156ff38e9324e1f6d0712d1fc8ef",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/magicians_red_crossfire_hurricane.png",
+      "target": "assets/jojo/textures/action/magicians_red_crossfire_hurricane.png",
+      "sha256": "77003022b00e5404cecb8c8fbabd3c4dd69d917460fe53a178b65a9763794ac0",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/magicians_red_detector.png",
+      "target": "assets/jojo/textures/action/magicians_red_detector.png",
+      "sha256": "04a5e1bff6816cfa959eead73b93e8a720c85ef979666c26d7bae50c0b5efb72",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/magicians_red_fireball.png",
+      "target": "assets/jojo/textures/action/magicians_red_fireball.png",
+      "sha256": "4c305be8e9c0d5c139c146f04a7734b400ea1c09a232af0cc7893a7a985416ac",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/magicians_red_flame_burst.png",
+      "target": "assets/jojo/textures/action/magicians_red_flame_burst.png",
+      "sha256": "5f1df0caa4b298d67dc219b6bbb8b172bb7d844daaa2da59c4d6078adc26d1c0",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/magicians_red_heavy_punch.png",
+      "target": "assets/jojo/textures/action/magicians_red_heavy_punch.png",
+      "sha256": "0ef0dd69c4a0d8462d6171dffb70a1cb48a21376caa1d044fa973a7465119927",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/magicians_red_kick.png",
+      "target": "assets/jojo/textures/action/magicians_red_kick.png",
+      "sha256": "317501b22303cc596e75623de9d3417e611a9e6fb317583d31b350c9bd4db250",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/magicians_red_punch.png",
+      "target": "assets/jojo/textures/action/magicians_red_punch.png",
+      "sha256": "4ce815937416e0237a1dbd91f070dfc11fdfe91f2318eff49205064ed7711d2c",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/magicians_red_red_bind.png",
+      "target": "assets/jojo/textures/action/magicians_red_red_bind.png",
+      "sha256": "77cec5b3e5663ff7b9e1a51c22cea1bc757fdfca0ac624e582128f852b18ddb4",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/block/mr_fire_0.png",
+      "target": "assets/jojo/textures/block/mr_fire_0.png",
+      "sha256": "4f0dc14fed6738900a44fc1fcaece9efdc107943287a9fff8264e4839292f9ad",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/block/mr_fire_0.png.mcmeta",
+      "target": "assets/jojo/textures/block/mr_fire_0.png.mcmeta",
+      "sha256": "658d67c1b3206e23a401d04ec196512b72702b7b8c6fa0200c6c66250529bbbb",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/block/mr_fire_1.png",
+      "target": "assets/jojo/textures/block/mr_fire_1.png",
+      "sha256": "47121e48ca50162c1ce6cc8781b78e11ff936364d76c7244f15ad5a36d9b7451",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/block/mr_fire_1.png.mcmeta",
+      "target": "assets/jojo/textures/block/mr_fire_1.png.mcmeta",
+      "sha256": "802acdb8f55f30146d5ed18414b21ba35650d4e550f81825ea104131c12dc4fc",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/entity/mr_detector.png",
+      "target": "assets/jojo/textures/entity/mr_detector.png",
+      "sha256": "d08114ab6fed0bc92d328ceeaf33c2b7f53e8bc49f511390e7a45e77012c4493",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/entity/projectiles/mr_fireball.png",
+      "target": "assets/jojo/textures/entity/projectiles/mr_fireball.png",
+      "sha256": "90c74010283975b11e2b9d9e7b113a39912a03be52375daa31498eacbc65def4",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/entity/stand/magicians_red.png",
+      "target": "assets/jojo/textures/entity/stand/magicians_red.png",
+      "sha256": "2712ea0ac81e2b2fe49e0547a4aec0ee612c6b55ae1b0f3f38e2e645a8dc1c35",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/entity/stand/magicians_red_fire_0.png",
+      "target": "assets/jojo/textures/entity/stand/magicians_red_fire_0.png",
+      "sha256": "4f0dc14fed6738900a44fc1fcaece9efdc107943287a9fff8264e4839292f9ad",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/entity/stand/magicians_red_fire_0.png.mcmeta",
+      "target": "assets/jojo/textures/entity/stand/magicians_red_fire_0.png.mcmeta",
+      "sha256": "658d67c1b3206e23a401d04ec196512b72702b7b8c6fa0200c6c66250529bbbb",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/entity/stand/magicians_red_fire_1.png",
+      "target": "assets/jojo/textures/entity/stand/magicians_red_fire_1.png",
+      "sha256": "47121e48ca50162c1ce6cc8781b78e11ff936364d76c7244f15ad5a36d9b7451",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/entity/stand/magicians_red_fire_1.png.mcmeta",
+      "target": "assets/jojo/textures/entity/stand/magicians_red_fire_1.png.mcmeta",
+      "sha256": "802acdb8f55f30146d5ed18414b21ba35650d4e550f81825ea104131c12dc4fc",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/particle/magicians_red_flame.png",
+      "target": "assets/jojo/textures/particle/magicians_red_flame.png",
+      "sha256": "2f2efacac134ce943d142d3a40e43f87e80e1e32d7137645bb1268618505e4a7",
+      "pipeline": "processResources original asset copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/power/magicians_red.png",
+      "target": "assets/jojo/textures/power/magicians_red.png",
+      "sha256": "6a94803a6e853c8e3ce99ac7eefd2180f77014d969d49a1ba1e7098bfba8cf83",
+      "pipeline": "processResources original asset copy"
+    }
+  ],
+  "atlas_addition": "fabric/src/main/resources/assets/minecraft/atlases/blocks.json",
+  "converter_addition": {
+    "id": "jojo:item_icon_mr_fireball",
+    "kind": "item_model",
+    "source": "src/main/resources/assets/jojo/models/item/item_icon_mr_fireball.json",
+    "target": "assets/jojo/models/item/item_icon_mr_fireball.json",
+    "item_definition": "assets/jojo/items/item_icon_mr_fireball.json"
+  },
+  "sound_events": [
+    "avdol_crossfire_hurricane",
+    "avdol_crossfire_hurricane_special",
+    "avdol_hell_2_u",
+    "avdol_magicians_red",
+    "avdol_red_bind",
+    "magicians_red_fire_ability",
+    "magicians_red_kick_heavy",
+    "magicians_red_punch_heavy",
+    "magicians_red_punch_light",
+    "magicians_red_summon",
+    "magicians_red_unsummon",
+    "stand_damage_block",
+    "stand_punch_heavy_swing"
+  ],
+  "vanilla_sound_events": [
+    "minecraft:item.firecharge.use",
+    "minecraft:block.fire.ambient",
+    "minecraft:block.fire.extinguish",
+    "minecraft:entity.generic.explode"
+  ],
+  "optional_resource_pack_glow": [
+    "assets/jojo/textures/entity/stand/glow/magicians_red.png"
+  ],
+  "status": "Source checked; integrated compilation, gameplay and client scenes pending root lane"
+}

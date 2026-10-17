@@ -18,13 +18,14 @@ Deliver playable, tested drafts that progressively restore the original Stand ex
 
 ### Active
 
-- User accepted Draft 10 original time-action behavior. Draft 11 knives and The World volleys, including original Time Stop projectile behavior, are verified and packaged for playtest.
-- Remaining Star Platinum combat and advanced abilities, followed by acquisition/progression and broader content parity.
+- User accepted Draft 16.1 on 2026-10-18 and authorized reverse-engineering/adapting the rest of the original mod.
+- Complete all remaining active Stand/non-Stand powers, shared combat/progression/UI, items/NPC/world content, migration and compatibility, preserving original methods and assets.
+- Keep verified local drafts available while work continues. Partial deliveries do not close the full-port objective.
 
-### Out of Scope for the Immediate Draft
+### Boundaries
 
-- Full original parity, remaining Stands, Hamon/vampirism, world content and Forge save migration remain later phases.
-- Public releases — the user has authorized a private GitHub repository for source progress; playable drafts remain local.
+- Dormant registrations and original TODO content remain dormant; do not invent behavior.
+- Public release is outside the current task. Private GitHub exists; local staging remains the current handoff policy.
 
 ## Context and Constraints
 

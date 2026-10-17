@@ -37,7 +37,7 @@ public record TimeStopPayload(
                 BlockPos origin = buffer.readBlockPos(); Identifier dimension = buffer.readIdentifier();
                 int casterId = buffer.readInt(); UUID caster = buffer.readUUID();
                 int state = buffer.readUnsignedByte(), ticks = buffer.readInt();
-                if (state >= State.values().length || ticks < 0 || ticks > 100) throw new io.netty.handler.codec.DecoderException("Invalid time stop state");
+                if (state >= State.values().length || ticks < 0 || ticks > TimeStopService.MAX_STOP_TICKS) throw new io.netty.handler.codec.DecoderException("Invalid time stop state");
                 return new TimeStopPayload(origin, dimension, casterId, caster, State.values()[state], ticks);
             }
     );

@@ -178,7 +178,7 @@ public class KnifeEntity extends AbstractArrow {
             }
         }
     }
-    @Override protected void doPostHurtEffects(LivingEntity target) { StuckKnives.add(target); }
+    @Override protected void doPostHurtEffects(LivingEntity target) { StuckKnives.add(target); com.github.standobyte.jojo.fabric.stand.tracking.TrackingHooks.projectileEmbedded(this,target,true); }
 
     @Override protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);

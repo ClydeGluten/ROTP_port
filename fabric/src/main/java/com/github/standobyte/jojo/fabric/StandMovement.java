@@ -14,6 +14,19 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
  * the flying speed and the global tick rate are left alone. Server thread only.
  */
 public final class StandMovement {
+    private static final java.util.Map<java.util.UUID, java.util.Map<Identifier, Float>> ACTION_FACTORS = new java.util.HashMap<>();
+    public static void actionFactor(ServerPlayer player, Identifier action, float factor) {
+        if (!Float.isFinite(factor) || factor < 0 || factor > 1) throw new IllegalArgumentException("Invalid action movement factor");
+        ACTION_FACTORS.computeIfAbsent(player.getUUID(), ignored -> new java.util.HashMap<>()).put(action, factor);
+        update(player);
+    }
+    public static void releaseAction(ServerPlayer player, Identifier action) {
+        var factors = ACTION_FACTORS.get(player.getUUID());
+        if (factors != null) { factors.remove(action); if (factors.isEmpty()) ACTION_FACTORS.remove(player.getUUID()); }
+        update(player);
+    }
+    public static void releaseAllActions(ServerPlayer player) { ACTION_FACTORS.remove(player.getUUID()); clear(player); }
+    public static void clearRuntime() { ACTION_FACTORS.clear(); }
     /** {@code StandEntityAction.Builder.userWalkSpeed}: default for actions without an explicit factor (heavy, finger, inhale, zoom). */
     public static final float ACTION_FACTOR = 0.5F;
     /** {@code StandEntityMeleeBarrage.Builder}: {@code standUserWalkSpeed(0.15F)}. */
@@ -31,8 +44,9 @@ public final class StandMovement {
     public static float desiredFactor(ServerPlayer player) {
         if (!player.isAlive() || player.isSpectator() || TimeStopService.isFrozen(player)) return 1F;
         float factor = 1F;
-        StarPlatinumEntity stand = StandService.current(player);
+        StandManifestation stand = StandService.currentManifestation(player);
         if (stand != null) factor = stand.userWalkSpeed();
+        for (float requested : ACTION_FACTORS.getOrDefault(player.getUUID(), java.util.Map.of()).values()) factor = Math.min(factor, requested);
         if (TimeStopService.isCharging(player)) factor = Math.min(factor, TIME_STOP_CHARGE_FACTOR);
         return Math.max(0F, Math.min(1F, factor));
     }

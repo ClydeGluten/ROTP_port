@@ -2,6 +2,8 @@ package com.github.standobyte.jojo.fabric.client;
 
 import com.github.standobyte.jojo.core.ResolveProgress;
 import com.github.standobyte.jojo.fabric.StandAttachments;
+import com.github.standobyte.jojo.fabric.VampireAttachments;
+import com.github.standobyte.jojo.fabric.ProgressionService;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
@@ -48,6 +50,8 @@ public final class ProgressionScreen extends Screen {
 
     @Override
     protected void init() {
+        if (HamonClient.playable()) addRenderableWidget(Button.builder(Component.translatable("non_stand.jojo.hamon"), b -> minecraft.gui.setScreen(new HamonScreen()))
+                .bounds(width / 2 - 50, 3, 100, 20).build());
         int w = 100;
         addRenderableWidget(Button.builder(Component.translatable("jojo.fabric.progress.close"), b -> onClose())
                 .bounds((width - w) / 2, height - FOOTER + 4, w, 20).build());
@@ -70,11 +74,30 @@ public final class ProgressionScreen extends Screen {
     @Override
     public Component getNarrationMessage() {
         var r = resolve();
-        if (r == null || !hasStand()) return Component.translatable("jojo.fabric.progress.narration.none");
-        return Component.translatable(creative() ? "jojo.fabric.progress.narration.creative" : "jojo.fabric.progress.narration",
+        var result = VampireClient.playable() ? Component.translatable("non_stand.jojo.vampirism").append(". ").append(vampireStatus())
+                .append(" ").append(vampireBlood()) : Component.empty();
+        if (ZombieClient.playable()) result = ZombieHud.powerName().copy().append(". ").append(zombieBlood()).append(". ").append(ZombieHud.name("zombie_disguise"));
+        if (r == null || !hasStand()) return VampireClient.playable() || ZombieClient.playable() ? result : Component.translatable("jojo.fabric.progress.narration.none");
+        var standNarration = Component.translatable(creative() ? "jojo.fabric.progress.narration.creative" : "jojo.fabric.progress.narration",
                 r.level(), Math.round(r.resolve()), Math.round(r.maxResolve()),
-                String.format(java.util.Locale.ROOT, "%.2f", r.timeStopTicks() / 20F), Math.round(r.trainingPoints()));
+                String.format(java.util.Locale.ROOT, "%.2f", Math.min(r.timeStopTicks(), timeStopMaximum()) / 20F),
+                Math.round(Math.min(r.trainingPoints(), timeStopMaximum() - 5)), timeStopMaximum() - 5);
+        return VampireClient.playable() || ZombieClient.playable() ? result.append(". ").append(standNarration) : standNarration;
     }
+
+    private Component vampireStatus() {
+        var vampire = minecraft.player.getAttachedOrCreate(VampireAttachments.PROGRESS);
+        return Component.translatable(vampire.fullPower() ? "jojo.fabric.vampire.full_status" : "jojo.fabric.vampire.weak_status");
+    }
+    private Component vampireBlood() {
+        var state = minecraft.player.getAttachedOrCreate(VampireAttachments.PROGRESS);
+        return Component.translatable("jojo.fabric.vampire.blood", Math.round(state.blood()), Math.round(state.maxBlood()));
+    }
+    private Component zombieBlood() {
+        var state = ZombieClient.state();
+        return Component.translatable("jojo.fabric.vampire.blood", Math.round(state.blood()), Math.round(state.maxBlood()));
+    }
+    private int timeStopMaximum() { return ProgressionService.timeStopMaximum(minecraft.player); }
 
     private static Component key(String name) {
         return Component.keybind("key.jojo.fabric." + name);
@@ -102,6 +125,42 @@ public final class ProgressionScreen extends Screen {
         List<Row> rows = new ArrayList<>();
         ResolveProgress r = resolve();
         if (r == null) return rows;
+        if (VampireClient.playable()) {
+            text(rows, w, Component.translatable("non_stand.jojo.vampirism"), RED);
+            text(rows, w, vampireStatus(), GOLD);
+            text(rows, w, vampireBlood(), WHITE);
+            text(rows, w, Component.translatable("jojo.fabric.vampire.controls", Component.keybind("jojo.key.non_stand_mode"),
+                    Component.keybind("jojo.key.attack_hotbar"), Component.keybind("jojo.key.ability_hotbar")), WHITE);
+            text(rows, w, Component.translatable("jojo.fabric.vampire.empty_hand"), GOLD);
+            text(rows, w, Component.translatable("jojo.fabric.vampire.drain_help"), LILAC);
+            text(rows, w, Component.translatable("jojo.fabric.vampire.claw_help"), LILAC);
+            text(rows, w, Component.translatable("jojo.fabric.vampire.gift_help"), LILAC);
+            text(rows, w, Component.translatable("jojo.fabric.vampire.advanced_help"), LILAC);
+            text(rows, w, Component.translatable("jojo.fabric.vampire.leap_help",
+                    Component.keybind(minecraft.options.keyShift.getName()), Component.keybind(minecraft.options.keyJump.getName())), LILAC);
+            text(rows, w, Component.translatable("jojo.fabric.vampire.sun_help"), RED);
+            text(rows, w, Component.translatable("jojo.fabric.vampire.coffin_help"), LILAC);
+            text(rows, w, Component.translatable("jojo.fabric.vampire.cure_help"), LILAC);
+            text(rows, w, Component.translatable("jojo.fabric.vampire.hamon_help"), LILAC);
+            text(rows, w, Component.translatable("jojo.fabric.vampire.time_shortcut"), LILAC);
+            gap(rows);
+        }
+        if (ZombieClient.playable()) {
+            text(rows, w, ZombieHud.powerName(), 0xFF000000 | ZombieHud.COLOR);
+            text(rows, w, zombieBlood(), WHITE);
+            text(rows, w, Component.translatable("jojo.fabric.vampire.controls", Component.keybind("jojo.key.non_stand_mode"),
+                    Component.keybind("jojo.key.attack_hotbar"), Component.keybind("jojo.key.ability_hotbar")), WHITE);
+            text(rows, w, Component.translatableWithFallback("jojo.fabric.zombie.claw_help", "Claw Lacerate: free main hand or open-finger gloves; requires 60 blood. Strikes after a short windup without spending blood."), LILAC);
+            text(rows, w, Component.translatableWithFallback("jojo.fabric.zombie.devour_help", "Hold Devour near a living target to drink blood and heal. Taking damage interrupts it. Drained villagers and illagers can become untamed zombies."), LILAC);
+            text(rows, w, Component.translatableWithFallback("jojo.fabric.zombie.middle_help", "Hold %s for Devour.", Component.keybind(minecraft.options.keyPickItem.getName())), WHITE);
+            text(rows, w, ZombieHud.name("zombie_disguise"), GREEN);
+            text(rows, w, Component.translatableWithFallback("jojo.fabric.zombie.disguise_help", "Hold Disguise for three seconds to toggle. Disguise hides zombie skin and suppresses Claw, Devour, and physical buffs."), LILAC);
+            text(rows, w, Component.translatableWithFallback("jojo.fabric.zombie.leap_help", "Press %s + %s to leap. Leap costs no blood and recharges in one second.",
+                    Component.keybind(minecraft.options.keyShift.getName()), Component.keybind(minecraft.options.keyJump.getName())), LILAC);
+            text(rows, w, Component.translatableWithFallback("jojo.fabric.zombie.food_help", "Meat restores blood and health. Zombie power has no passive regeneration and is lost on death."), GOLD);
+            text(rows, w, Component.translatable("jojo.fabric.vampire.sun_help"), RED);
+            gap(rows);
+        }
         if (!hasStand()) {
             text(rows, w, Component.translatable("jojo.fabric.progress.no_stand"), GOLD);
             return rows;
@@ -120,7 +179,8 @@ public final class ProgressionScreen extends Screen {
 
         text(rows, w, Component.translatable("jojo.fabric.progress.gain_title"), GOLD);
         text(rows, w, Component.translatable("jojo.fabric.progress.gain_attacks"), LILAC);
-        text(rows, w, Component.translatable("jojo.fabric.progress.gain_boost"), LILAC);
+        text(rows, w, Component.translatable(VampireClient.playable() ? "jojo.fabric.progress.vampire_gain_boost"
+                : "jojo.fabric.progress.gain_boost"), LILAC);
         text(rows, w, Component.translatable("jojo.fabric.progress.decay"), LILAC);
         gap(rows);
 
@@ -139,13 +199,25 @@ public final class ProgressionScreen extends Screen {
                 Component.keybind(minecraft.options.keyShift.getName())), LILAC);
         gap(rows);
 
+        if (ActionCatalog.world()) {
+            text(rows, w, Component.translatable("item.jojo.knife"), GOLD);
+            text(rows, w, Component.translatable("jojo.fabric.knife.obtain"), WHITE);
+            text(rows, w, KnifeClient.throwHint(), LILAC);
+            text(rows, w, Component.translatable("jojo.fabric.knife.world"), LILAC);
+            gap(rows);
+        }
+
         text(rows, w, Component.translatable("jojo.fabric.progress.time_title"), GOLD);
+        int maximumTicks = timeStopMaximum(), maximumPoints = maximumTicks - 5;
+        String maximumSeconds = String.format(java.util.Locale.ROOT, "%.1f", maximumTicks / 20F);
         text(rows, w, Component.translatable("jojo.fabric.progress.time_duration",
-                String.format(java.util.Locale.ROOT, "%.2f", r.timeStopTicks() / 20F), "5.0"), WHITE);
-        text(rows, w, Component.translatable("jojo.fabric.progress.time_points", Math.round(r.trainingPoints() * 10) / 10F, 95), WHITE);
-        rows.add(new Row(null, 0, Math.clamp(r.trainingPoints() / 95F, 0F, 1F), 0xFF5CC8FF));
-        text(rows, w, Component.translatable(ActionCatalog.world() ? "jojo.fabric.progress.world_training" : "jojo.fabric.progress.time_training"), LILAC);
-        if (creative) text(rows, w, Component.translatable("jojo.fabric.progress.time_creative"), CYAN);
+                String.format(java.util.Locale.ROOT, "%.2f", Math.min(r.timeStopTicks(), maximumTicks) / 20F), maximumSeconds), WHITE);
+        text(rows, w, Component.translatable("jojo.fabric.progress.time_points", Math.round(Math.min(r.trainingPoints(), maximumPoints) * 10) / 10F, maximumPoints), WHITE);
+        rows.add(new Row(null, 0, Math.clamp(r.trainingPoints() / maximumPoints, 0F, 1F), 0xFF5CC8FF));
+        if (r.trainingPoints() > maximumPoints) text(rows, w, Component.translatable("jojo.fabric.progress.time_retained_training",
+                Math.round(r.trainingPoints() * 10) / 10F), GOLD);
+        text(rows, w, Component.translatable(ActionCatalog.world() ? "jojo.fabric.progress.world_training" : "jojo.fabric.progress.time_training", maximumSeconds), LILAC);
+        if (creative) text(rows, w, Component.translatable("jojo.fabric.progress.time_creative", maximumSeconds), CYAN);
         return rows;
     }
 

@@ -59,8 +59,8 @@ Draft 8 implements natural awakening generations for two playable Stands. Provis
 ### Phase 5: Remaining Content and Compatibility
 **Goal:** Extend the validated foundation across original content and define migration support.
 **Depends on:** Phase 3, Phase 4
-**Requirements:** PARITY-03, PARITY-04, WORLD-01, HUD-01, CAMERA-01
-**Plans:** 6 plans
+**Requirements:** PARITY-03, PARITY-04, WORLD-01, HUD-01, CAMERA-01, VAMP-01, VAMP-02
+**Plans:** 78 plans (21 historical deliveries; 57 remaining-port execution plans)
 
 Plans:
 - [x] 05-01-PLAN.md — The World original assets, distinct melee/time abilities, separate progression and acquisition; verified alongside the HUD in Draft 8.
@@ -75,7 +75,27 @@ Plans:
 
 - [x] 05-06-PLAN.md — Original knives, The World volleys, stopped-time projectile behavior and Draft 11.
 
-The World and knives are playable; Draft 11 awaits user playtest. Vampirism, broader Time Stop perception and original content remain open.
+- [x] 05-07-PLAN.md — Repair Draft 11 vertical aiming and knife usability; original Stone Mask/Blood Gift vampirism, blood resource and starter actions verified in Draft 12.
+
+- [x] 05-08-PLAN.md — Remaining vampire scope (Draft 13); source behavior, focused client validation.
+
+- [x] 05-09-PLAN.md — Vampire parity follow-up: weak leap, original effect applicability, coffin advancement and confirmed rendering corrections.
+
+- [x] 05-10-PLAN.md — Hamon progression and learning (wave 1).
+- [x] 05-11-PLAN.md — Hamon actions and passive effects (wave 2).
+- [x] 05-12-PLAN.md — Original Hamon UI and presentation (wave 2).
+- [x] 05-13-PLAN.md — Hamon equipment and world content (wave 2).
+- [x] 05-14-PLAN.md — Hamon integration and playable draft (wave 3).
+- [x] 05-15-PLAN.md — Source review, damage-event omissions and original contact sparks.
+- [x] 05-16-PLAN.md — Original training rollover and cached exercise bonus timing.
+- [x] 05-17-PLAN.md — Skill-window interactions and handed kick animation.
+- [x] 05-18-PLAN.md — Infusion target/cost validation and Life Magnetism hand checks.
+- [x] 05-19-PLAN.md — Glider landing immunity and Molotov ignition prediction.
+- [x] 05-20-PLAN.md — Combined focused verification and Draft 16 packaging.
+- [x] 05-21-PLAN.md — Playtest guidance, source evidence and staged delivery.
+
+
+Draft 16.1 was accepted on 2026-10-18. The user authorized reverse engineering and adapting the rest of the active original mod. [The remaining execution index](phases/05-remaining-content-and-compatibility/05-REST-PLAN-INDEX.md) tracks plans 05-22–05-78, their dependencies, ownership and complete-scope acceptance. Draft17 packages zombie-player powers, all three Pillar Man modes, equipment, possession, temple content and shared Stand/species foundations after247 server checks plus integrated/dedicated client flows. Silver Chariot, Hierophant Green and terrain restoration are the next implementation wave. Intermediate deliveries do not close the full-port objective.
 
 ## Progress
 
@@ -85,4 +105,8 @@ The World and knives are playable; Draft 11 awaits user playtest. Vampirism, bro
 | 2. Combat Draft | 1/1 | Complete (automated) | 2026-10-12 |
 | 3. Star Platinum Abilities | 3/3 | Draft 7 camera correction verified; parity gaps remain | - |
 | 4. Acquisition and Progression | 3/3 | Draft 8 action HUD and allocation; broader parity gaps remain | - |
-| 5. Remaining Content and Compatibility | 6/6 | Draft 11 knives verified; broad parity remains open | - |
+| 5. Remaining Content and Compatibility | 21/78 | Draft 16.1 accepted; executing the complete remaining active original-mod scope | - |
+
+Remaining-port delivery update: Draft18 verifies Silver Chariot/Hierophant Green, terrain-history groundwork and shared config with258 server checks plus fresh integrated/dedicated controls and vampire Time Stop late join. MR/CD/GE next batch remains in production; original-mod parity is incomplete.
+
+2026-10-18 handoff: Codex stopped implementation at the user’s request. Antigravity-only continuation is bounded by available quota/five hours, then a repository/GSD checkpoint and pause. Workspace19 compiles but remains unverified; CD44–46, GE48–50 and President51–52 are saved as inactive WIP. Draft18 remains the latest verified artifact. See `.continue-here.md` in phase5.

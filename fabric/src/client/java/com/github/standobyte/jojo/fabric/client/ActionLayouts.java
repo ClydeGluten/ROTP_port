@@ -1,5 +1,9 @@
 package com.github.standobyte.jojo.fabric.client;
 
+import com.github.standobyte.jojo.fabric.client.pillarman.PillarmanClient;
+import com.github.standobyte.jojo.fabric.client.pillarman.PillarmanHud;
+import com.github.standobyte.jojo.fabric.client.pillarman.PillarmanActionCatalog;
+
 import com.github.standobyte.jojo.core.ActionLayout;
 import com.google.gson.*;
 import com.mojang.logging.LogUtils;
@@ -15,10 +19,23 @@ public final class ActionLayouts {
     private static Path file = FabricLoader.getInstance().getConfigDir().resolve("jojo/action-layouts.json");
     private static boolean loaded;
 
-    public static ActionLayout current() { return get(ActionCatalog.standId()); }
+    public static String currentId() {
+        var player = net.minecraft.client.Minecraft.getInstance().player;
+        if (PillarmanClient.isMode() || PillarmanClient.playable() && player != null
+                && !player.getAttachedOrCreate(com.github.standobyte.jojo.fabric.StandAttachments.PROGRESS).hasStand()) return PillarmanClient.POWER_ID;
+        if (ZombieClient.isMode() || ZombieClient.playable() && player != null
+                && !player.getAttachedOrCreate(com.github.standobyte.jojo.fabric.StandAttachments.PROGRESS).hasStand()) return ZombieClient.POWER_ID;
+        boolean onlyVampire = VampireClient.playable() && player != null
+                && !player.getAttachedOrCreate(com.github.standobyte.jojo.fabric.StandAttachments.PROGRESS).hasStand();
+        if (HamonClient.isMode() || HamonClient.playable() && player != null && !player.getAttachedOrCreate(com.github.standobyte.jojo.fabric.StandAttachments.PROGRESS).hasStand()) return HamonClient.POWER_ID;
+        return VampireClient.isMode() || onlyVampire ? VampireClient.POWER_ID : ActionCatalog.standId();
+    }
+    public static ActionLayout current() { return get(currentId()); }
     public static ActionLayout get(String stand) {
         if (!loaded) load();
-        return LAYOUTS.computeIfAbsent(stand, id -> ActionCatalog.defaults(id.equals("jojo:the_world")));
+        var layout = LAYOUTS.computeIfAbsent(stand, ActionCatalog::defaults);
+        if (stand.equals(HamonClient.POWER_ID) || stand.equals(PillarmanClient.POWER_ID)) { layout = normalize(stand, layout); LAYOUTS.put(stand, layout); }
+        return layout;
     }
     public static boolean set(String stand, ActionLayout layout) {
         if (!loaded) load();
@@ -26,9 +43,8 @@ public final class ActionLayouts {
         return save();
     }
     private static ActionLayout normalize(String stand, ActionLayout layout) {
-        boolean world = stand.equals("jojo:the_world");
         return ActionLayout.restoreFlexible(layout.attacks(), layout.abilities(), layout.selectedAttack(), layout.selectedAbility(), layout.disabled(),
-                ActionCatalog.attacks(world), ActionCatalog.abilities(world));
+                ActionCatalog.attacks(stand), ActionCatalog.abilities(stand));
     }
     public static void load() {
         loaded = true;
@@ -37,7 +53,9 @@ public final class ActionLayouts {
         try {
             if (Files.size(file) > 65536) throw new IOException("Action layout exceeds 64 KiB");
             JsonObject root = JsonParser.parseString(Files.readString(file)).getAsJsonObject();
-            for (String stand : List.of("jojo:star_platinum", "jojo:the_world")) {
+            var powers = new ArrayList<>(com.github.standobyte.jojo.core.StandDefinitions.all().stream().map(com.github.standobyte.jojo.core.StandDefinitions.Definition::id).toList());
+            powers.addAll(List.of(VampireClient.POWER_ID, HamonClient.POWER_ID, ZombieClient.POWER_ID, PillarmanClient.POWER_ID));
+            for (String stand : powers) {
                 if (!root.has(stand)) continue;
                 JsonObject value = root.getAsJsonObject(stand);
                 boolean world = stand.equals("jojo:the_world");
@@ -45,7 +63,7 @@ public final class ActionLayouts {
                 List<String> abilities = strings(value.get("abilities"));
                 // Draft 8 had extra direct-action slots and a different default ability order.
                 // Reset untouched defaults while preserving deliberate compatible reordering.
-                if (!root.has("format")) {
+                if (!root.has("format") && ActionCatalog.legacyStand(stand)) {
                     if (attacks.equals(world ? List.of("light", "heavy", "barrage", "kick", "time_punch")
                             : List.of("light", "heavy", "barrage", "uppercut", "finger"))) attacks = ActionCatalog.attacks(world);
                     if (abilities.equals(world ? List.of("guard", "control", "time_stop", "blink")
@@ -53,7 +71,7 @@ public final class ActionLayouts {
                 }
                 LAYOUTS.put(stand, ActionLayout.restoreFlexible(attacks, abilities,
                         string(value.get("selectedAttack")), string(value.get("selectedAbility")), strings(value.get("disabled")),
-                        ActionCatalog.attacks(world), ActionCatalog.abilities(world)));
+                        ActionCatalog.attacks(stand), ActionCatalog.abilities(stand)));
             }
         } catch (IOException | RuntimeException exception) {
             LAYOUTS.clear();

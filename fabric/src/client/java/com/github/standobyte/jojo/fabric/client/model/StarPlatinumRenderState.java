@@ -64,6 +64,22 @@ public class StarPlatinumRenderState extends LivingEntityRenderState {
 
     public int cameraTint() { return (Math.round(cameraOpacity * 255) << 24) | 0xFFFFFF; }
 
+    /** Legacy HumanoidStandModel armsRotation/armsRotationFull/armsRotationBack, applied to JSON limb pivots. */
+    public float meleePitch() {
+        float progress = actionDuration > 0 ? Math.clamp(actionTicks / actionDuration, 0, 1) : 0;
+        float amount;
+        if (heavyAttack) {
+            amount = actionPhase == PHASE_RECOVERY ? 1 - Math.max(2 * progress - 1, 0) : 1;
+        } else {
+            amount = switch (actionPhase) {
+                case PHASE_WINDUP -> Math.min(progress * 2, 1);
+                case PHASE_PERFORM -> 1 - Math.clamp((progress - 0.25F) * 4, 0, 1);
+                default -> 0;
+            };
+        }
+        return (float) Math.toRadians(xRot) * amount;
+    }
+
     /**
      * Calculates the extending finger reach in blocks based on the server authority formula:
      * max 3.6 units; 0.3/tick extends 12 ticks, hold 4 ticks, 0.9/tick retracts 4 ticks.

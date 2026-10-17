@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "stand": "jojo:silver_chariot",
+  "geometry_manifest": "fabric/migration/remaining-model-manifest.json",
+  "generated_geometry": {
+    "body": {
+      "source": "src/main/java/com/github/standobyte/jojo/client/render/entity/model/stand/SilverChariotModel.java",
+      "class": "SilverChariotGeometry",
+      "parts": 22,
+      "cubes": 50
+    },
+    "armor": {
+      "source": "src/main/java/com/github/standobyte/jojo/client/render/entity/model/stand/SilverChariotArmorLayerModel.java",
+      "class": "SilverChariotArmorGeometry",
+      "parts": 21,
+      "cubes": 42
+    }
+  },
+  "resources": [
+    {
+      "source": "src/main/resources/assets/jojo/textures/entity/stand/silver_chariot.png",
+      "target": "assets/jojo/textures/entity/stand/silver_chariot.png",
+      "sha256": "305e1b9e7b2362aabe64eab5e71a073fdf4e852ddb95497c27ffcf34bc83cbb5",
+      "pipeline": "processResources original texture copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/entity/stand/silver_chariot_armor.png",
+      "target": "assets/jojo/textures/entity/stand/silver_chariot_armor.png",
+      "sha256": "c0dba856d0320195e7ed056aa44418c8d0832ac855ccb48fd5d007f7cf37bd4f",
+      "pipeline": "processResources original texture copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/power/silver_chariot.png",
+      "target": "assets/jojo/textures/power/silver_chariot.png",
+      "sha256": "2d7d762eb043aa259717ead352f2680ba0474215fbd90e6a5c90aba87412f50c",
+      "pipeline": "processResources original texture copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/particles/flame.json",
+      "target": "assets/jojo/particles/flame.json",
+      "sha256": "e446a942094d6be3b90cdc96f5dbe3b6eb631b650635fbf59ac2a8b997e65974",
+      "pipeline": "convertRemainingResources"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/particle/magicians_red_flame.png",
+      "target": "assets/jojo/textures/particle/magicians_red_flame.png",
+      "sha256": "2f2efacac134ce943d142d3a40e43f87e80e1e32d7137645bb1268618505e4a7",
+      "pipeline": "processResources original texture copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/silver_chariot_attack.png",
+      "target": "assets/jojo/textures/action/silver_chariot_attack.png",
+      "sha256": "ff1fdb0bb1f23a62cfec87600cec2ed36586e284c1f2abd521a141a707fd0775",
+      "pipeline": "processResources original texture copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/silver_chariot_barrage.png",
+      "target": "assets/jojo/textures/action/silver_chariot_barrage.png",
+      "sha256": "fb63f6613da5cf64fe2888033d89961250627f5a9df400fcf6def7fa2f7b28b8",
+      "pipeline": "processResources original texture copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/silver_chariot_block.png",
+      "target": "assets/jojo/textures/action/silver_chariot_block.png",
+      "sha256": "4640e50cb48bdd9a66fe623704769d0de08b8877f7b8ed405d8d0eccbdeed374",
+      "pipeline": "processResources original texture copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/silver_chariot_dash_attack.png",
+      "target": "assets/jojo/textures/action/silver_chariot_dash_attack.png",
+      "sha256": "4fe34b3a5f047b48065ba4b2a75300f6553fee788b3f0a53729c84745ad36285",
+      "pipeline": "processResources original texture copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/silver_chariot_no_rapier_attack.png",
+      "target": "assets/jojo/textures/action/silver_chariot_no_rapier_attack.png",
+      "sha256": "066f47a17b625e550d8346e5e20f364e558e1b666f50bbc60a179225583a8dc5",
+      "pipeline": "processResources original texture copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/silver_chariot_rapier_launch.png",
+      "target": "assets/jojo/textures/action/silver_chariot_rapier_launch.png",
+      "sha256": "ebc53f8a146752e33263c872ae1dbcf3f028bbe1bbdd3ccfd0fb63f62a0fc99f",
+      "pipeline": "processResources original texture copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/silver_chariot_sweeping_attack.png",
+      "target": "assets/jojo/textures/action/silver_chariot_sweeping_attack.png",
+      "sha256": "435018040ce8b0c2526a0977bb6164b44d0674b66636d228ce55e21384ac2278",
+      "pipeline": "processResources original texture copy"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/silver_chariot_take_off_armor.png",
+      "target": "assets/jojo/textures/action/silver_chariot_take_off_armor.png",
+      "sha256": "a0c36dd60a3dfa5c385cb44221b6e804485186b3a92fa5995839c7e6a3317a83",
+      "pipeline": "processResources original texture copy"
+    }
+  ],
+  "optional_resource_pack_glow": [
+    "assets/jojo/textures/entity/stand/glow/silver_chariot.png",
+    "assets/jojo/textures/entity/stand/glow/silver_chariot_armor.png"
+  ],
+  "atlas_flames": [
+    "minecraft:block/fire_0",
+    "minecraft:block/fire_1"
+  ],
+  "sound_registry": "Original sounds.json copied by existing pipeline; JojoSounds resolves original registered keys",
+  "status": "source-checked; integrated compiled rendering and frames pending root lane"
+}

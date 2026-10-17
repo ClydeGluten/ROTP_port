@@ -21,7 +21,19 @@ public final class RipplesClient implements ClientModInitializer {
     private int heartbeatTicks;
     private boolean controlling;
     @Override public void onInitializeClient() {
+        net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking.registerGlobalReceiver(com.github.standobyte.jojo.fabric.StandConfigPayload.TYPE,
+                (payload,context)->com.github.standobyte.jojo.fabric.StandConfig.receive(payload.data()));
+        ClientPlayNetworking.registerGlobalReceiver(com.github.standobyte.jojo.fabric.StandConfigPayload.TYPE,
+                (payload,context)->context.client().execute(()->com.github.standobyte.jojo.fabric.StandConfig.receive(payload.data())));
+        net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register((handler,client)->client.execute(com.github.standobyte.jojo.fabric.StandConfig::resetClient));
         TimeStopClient.initialize();
+        TrackingClient.initialize();
+        com.github.standobyte.jojo.fabric.client.stand.MagiciansRedRenderer.initialize();
+        com.github.standobyte.jojo.fabric.StandPerception.setClientSpectator(com.github.standobyte.jojo.fabric.client.pillarman.PossessionClient::trueSpectator);
+        com.github.standobyte.jojo.fabric.client.stand.SilverChariotRenderer.initialize();
+        com.github.standobyte.jojo.fabric.client.stand.HierophantGreenRenderer.initialize();
+        HudElementRegistry.addLast(RipplesFabric.id("hierophant_barriers"),(graphics,delta)->
+                com.github.standobyte.jojo.fabric.client.stand.HierophantBarrierMarkers.render(graphics,delta.getGameTimeDeltaPartialTick(false)));
         TimeSkipClient.initialize();
         ModelLayerRegistry.registerModelLayer(StarPlatinumRenderer.LAYER, StarPlatinumModel::createBodyLayer);
         EntityRendererRegistry.register(RipplesFabric.STAR_PLATINUM, StarPlatinumRenderer::new);
@@ -30,6 +42,17 @@ public final class RipplesClient implements ClientModInitializer {
         EntityRendererRegistry.register(RipplesFabric.KNIFE, KnifeRenderer::new);
         var category = KeyMapping.Category.register(RipplesFabric.id("powers"));
         StandSelection.initialize(category);
+        VampireClient.initialize(category);
+        ZombieClient.initialize();
+        com.github.standobyte.jojo.fabric.client.pillarman.PillarBodyPartRenderer.initialize();
+        com.github.standobyte.jojo.fabric.client.pillarman.PossessionClient.initialize();
+        com.github.standobyte.jojo.fabric.client.pillarman.PillarWindClient.initialize();
+        com.github.standobyte.jojo.fabric.client.pillarman.PillarHeatClient.initialize();
+        com.github.standobyte.jojo.fabric.client.pillarman.PillarLightClient.initialize();
+        com.github.standobyte.jojo.fabric.client.pillarman.PillarmanPresentation.initialize();
+        com.github.standobyte.jojo.fabric.client.pillarman.PillarWorldClient.initialize();
+        KnifeClient.initialize();
+        com.github.standobyte.jojo.fabric.client.equipment.EquipmentClient.initialize();
         var summon = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.jojo.fabric.summon", InputConstants.KEY_M, category));
         var light = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.jojo.fabric.light", InputConstants.KEY_R, category));
         var heavy = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.jojo.fabric.heavy", InputConstants.UNKNOWN.getValue(), category));
@@ -43,23 +66,26 @@ public final class RipplesClient implements ClientModInitializer {
         var timeStop = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.jojo.fabric.time_stop", InputConstants.KEY_J, category));
         var blink = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.jojo.fabric.blink", InputConstants.KEY_U, category));
         var timePunch = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.jojo.fabric.time_punch", InputConstants.KEY_I, category));
-        var progression = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.jojo.fabric.progress", InputConstants.KEY_H, category));
+        var progression = KeyMappingHelper.registerKeyMapping(new KeyMapping("jojo.key.hamon_skills_window", InputConstants.KEY_H, category));
+        HamonClient.initialize(progression);
+        HamonContentClient.initialize();
+        HamonMapClient.initialize();
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents.CLIENT_STARTED.register(OriginalControlsMigration::apply);
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             StandCamera.update();
             boolean connected = client.player != null && ClientPlayNetworking.canSend(StandActionPayload.TYPE);
             boolean active = connected && client.gui.screen() == null && !client.isPaused() && client.isWindowActive()
                     && ClientPlayNetworking.canSend(StandActionPayload.TYPE);
-            while (progression.consumeClick()) if (active) { client.gui.setScreen(new ProgressionScreen()); active = false; }
+            while (progression.consumeClick()) if (active) { HamonClient.openProgression(); active = false; }
             StandSelection.tick(client, active);
             active &= client.gui.screen() == null;
             while (summon.consumeClick()) if (active) {
-                if (StandView.ownStand(client) == null) StandSelection.onStandSummon();
+                if (StandView.ownManifestation(client) == null) StandSelection.onStandSummon();
                 send(StandActionPayload.Action.TOGGLE);
             }
             while (light.consumeClick()) if (active) send(StandActionPayload.Action.LIGHT_PUNCH);
             while (heavy.consumeClick()) if (active) send(StandActionPayload.Action.HEAVY_PUNCH);
-            while (timeStop.consumeClick()) if (active) send(StandActionPayload.Action.TIME_STOP);
+            while (timeStop.consumeClick()) if (active && !VampireClient.consumesTimeStopShortcut(timeStop)) send(StandActionPayload.Action.TIME_STOP);
             while (blink.consumeClick()) if (active) send(StandActionPayload.Action.valueOf("BLINK"));
             while (timePunch.consumeClick()) if (active) send(StandActionPayload.Action.valueOf("TIME_PUNCH"));
             while (uppercut.consumeClick()) if (active) send(StandActionPayload.Action.UPPERCUT);

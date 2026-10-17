@@ -20,7 +20,9 @@ public final class StandAttachments {
             Codec.STRING.fieldOf("stand").forGetter(StandProgress::standId),
             STAMINA_CODEC.fieldOf("stamina").forGetter(StandProgress::stamina),
             DEVELOPMENT_CODEC.optionalFieldOf("development", 0F).forGetter(StandProgress::development),
-            Codec.BOOL.optionalFieldOf("had_stand", false).forGetter(StandProgress::hadStand)
+            Codec.BOOL.optionalFieldOf("had_stand", false).forGetter(StandProgress::hadStand),
+            Codec.floatRange(1, 6).optionalFieldOf("stamina_multiplier", 1F).forGetter(StandProgress::staminaMultiplier),
+            Codec.floatRange(1, 12).optionalFieldOf("regeneration_multiplier", 1F).forGetter(StandProgress::regenerationMultiplier)
     ).apply(instance, StandProgress::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, StandProgress> STREAM_CODEC = StreamCodec.of(
@@ -29,8 +31,9 @@ public final class StandAttachments {
                 buffer.writeFloat(value.stamina());
                 buffer.writeFloat(value.development());
                 buffer.writeBoolean(value.hadStand());
+                buffer.writeFloat(value.staminaMultiplier()); buffer.writeFloat(value.regenerationMultiplier());
             },
-            buffer -> new StandProgress(buffer.readUtf(256), buffer.readFloat(), buffer.readFloat(), buffer.readBoolean()));
+            buffer -> new StandProgress(buffer.readUtf(256), buffer.readFloat(), buffer.readFloat(), buffer.readBoolean(), buffer.readFloat(), buffer.readFloat()));
 
     public static final AttachmentType<StandProgress> PROGRESS = AttachmentRegistry.<StandProgress>builder()
             .initializer(() -> StandProgress.EMPTY)
@@ -58,7 +61,7 @@ public final class StandAttachments {
 
     public static final Codec<ResolveProgress> RESOLVE_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.intRange(0, 4).optionalFieldOf("level", 0).forGetter(ResolveProgress::level),
-            Codec.floatRange(0, 50000).optionalFieldOf("resolve", 0F).forGetter(ResolveProgress::resolve),
+            Codec.floatRange(0, Float.MAX_VALUE).optionalFieldOf("resolve", 0F).forGetter(ResolveProgress::resolve),
             Codec.intRange(0, 400).optionalFieldOf("no_decay", 0).forGetter(ResolveProgress::noDecayTicks),
             Codec.floatRange(1, 5).optionalFieldOf("attack_boost", 1F).forGetter(ResolveProgress::attackBoost),
             Codec.FLOAT.optionalFieldOf("health_record", -1F).forGetter(ResolveProgress::healthRecord),
@@ -66,8 +69,8 @@ public final class StandAttachments {
             Codec.BOOL.optionalFieldOf("save_record", true).forGetter(ResolveProgress::saveNextRecord),
             Codec.intRange(0, 2400).optionalFieldOf("burst_ticks", 0).forGetter(ResolveProgress::burstTicks),
             Codec.intRange(0, 4).optionalFieldOf("burst_level", 0).forGetter(ResolveProgress::burstLevel),
-            Codec.floatRange(0, 95).optionalFieldOf("training", 0F).forGetter(ResolveProgress::trainingPoints)
-    ).apply(instance, ResolveProgress::new));
+            Codec.floatRange(0, Float.MAX_VALUE).optionalFieldOf("training", 0F).forGetter(ResolveProgress::trainingPoints)
+    ).apply(instance, ResolveProgress::loaded));
     public static final StreamCodec<RegistryFriendlyByteBuf, ResolveProgress> RESOLVE_STREAM_CODEC = StreamCodec.of(
             (buffer, value) -> {
                 buffer.writeVarInt(value.level()); buffer.writeFloat(value.resolve()); buffer.writeVarInt(value.noDecayTicks());
@@ -80,7 +83,7 @@ public final class StandAttachments {
                 float boost = buffer.readFloat(), health = buffer.readFloat(); int count = buffer.readVarInt();
                 if (count < 0 || count > 10) throw new IllegalArgumentException("Invalid Resolve record count");
                 var records = new java.util.ArrayList<Float>(); for (int i = 0; i < count; i++) records.add(buffer.readFloat());
-                return new ResolveProgress(level, value, delay, boost, health, records, buffer.readBoolean(),
+                return ResolveProgress.loaded(level, value, delay, boost, health, records, buffer.readBoolean(),
                         buffer.readVarInt(), buffer.readVarInt(), buffer.readFloat());
             });
     public static final AttachmentType<ResolveProgress> RESOLVE = AttachmentRegistry.<ResolveProgress>builder()
@@ -93,8 +96,32 @@ public final class StandAttachments {
             .syncWith(RESOLVE_STREAM_CODEC, AttachmentSyncPredicate.targetOnly())
             .buildAndRegister(RipplesFabric.id("the_world_resolve"));
 
+    private static final AttachmentType<ResolveProgress> NO_STAND_RESOLVE = resolveAttachment("no_stand_resolve");
+    private static final java.util.Map<String, AttachmentType<ResolveProgress>> RESOLVE_TYPES = createResolveTypes();
+
+    private static AttachmentType<ResolveProgress> resolveAttachment(String path) {
+        return AttachmentRegistry.<ResolveProgress>builder().initializer(() -> ResolveProgress.EMPTY)
+                .persistent(RESOLVE_CODEC).copyOnDeath()
+                .syncWith(RESOLVE_STREAM_CODEC, AttachmentSyncPredicate.targetOnly())
+                .buildAndRegister(RipplesFabric.id(path));
+    }
+
+    private static java.util.Map<String, AttachmentType<ResolveProgress>> createResolveTypes() {
+        var result = new java.util.HashMap<String, AttachmentType<ResolveProgress>>();
+        // Keep both shipped attachment identifiers: existing saves need no destructive rewrite.
+        result.put(StandProgress.STAR_PLATINUM, RESOLVE);
+        result.put(StandProgress.THE_WORLD, THE_WORLD_RESOLVE);
+        for (var definition : com.github.standobyte.jojo.core.StandDefinitions.all()) {
+            if (!result.containsKey(definition.id())) result.put(definition.id(), resolveAttachment(definition.path() + "_resolve"));
+        }
+        return java.util.Map.copyOf(result);
+    }
+
+    public static AttachmentType<ResolveProgress> resolveType(String standId) {
+        return RESOLVE_TYPES.getOrDefault(standId, NO_STAND_RESOLVE);
+    }
     public static AttachmentType<ResolveProgress> resolveType(net.minecraft.world.entity.player.Player player) {
-        return player.getAttachedOrCreate(PROGRESS).hasTheWorld() ? THE_WORLD_RESOLVE : RESOLVE;
+        return resolveType(player.getAttachedOrCreate(PROGRESS).standId());
     }
     public static ResolveProgress resolve(net.minecraft.world.entity.player.Player player) {
         return player.getAttachedOrCreate(resolveType(player));
@@ -104,6 +131,6 @@ public final class StandAttachments {
             .syncWith(StandHudState.STREAM_CODEC, AttachmentSyncPredicate.targetOnly())
             .buildAndRegister(RipplesFabric.id("stand_hud"));
 
-    public static void initialize() { }
+    public static void initialize() { StandActionTraining.initialize(); StandParts.initialize(); StandEffects.initialize(); AbilityCooldowns.initialize(); }
     private StandAttachments() { }
 }

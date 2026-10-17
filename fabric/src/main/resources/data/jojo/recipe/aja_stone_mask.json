@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "jojo:aja_stone",
+    "jojo:stone_mask"
+  ],
+  "result": {
+    "id": "jojo:aja_stone_mask",
+    "count": 1
+  }
+}

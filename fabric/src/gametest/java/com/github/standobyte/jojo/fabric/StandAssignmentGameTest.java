@@ -40,50 +40,37 @@ public final class StandAssignmentGameTest {
     }
 
     @GameTest(environment = "jojo:assignment_1")
-    public void successfulArrowSequenceAllocatesBothAndAdvancesGeneration(GameTestHelper test) {
-        var server = test.getLevel().getServer();
-        StandAssignments.setCycle(server, StandAssignments.WorldCycle.INITIAL);
-
-        // Player 1 prefers Star Platinum (provisional 1)
-        var player1 = player(test, 0);
-        player1.setGameMode(GameType.CREATIVE);
-        StandAssignments.setProvisional(player1, 1);
-        test.assertTrue(use(player1) == InteractionResult.SUCCESS, "Creative arrow use succeeds");
-        test.assertValueEqual(player1.getAttachedOrCreate(StandAttachments.PROGRESS).standId(), StandProgress.STAR_PLATINUM, "Player 1 receives Star Platinum");
-
-        var cycle1 = StandAssignments.getCycle(server);
-        test.assertValueEqual(cycle1.generation(), 1, "Still generation 1");
-        test.assertValueEqual(cycle1.used(), List.of(StandProgress.STAR_PLATINUM), "Star Platinum is reserved in cycle");
-
-        // Player 2 also prefers Star Platinum (provisional 1), but SP is reserved, so falls back to The World
-        var player2 = player(test, 0);
-        player2.setGameMode(GameType.CREATIVE);
-        StandAssignments.setProvisional(player2, 1);
-        test.assertTrue(use(player2) == InteractionResult.SUCCESS, "Creative arrow use succeeds for Player 2");
-        test.assertValueEqual(player2.getAttachedOrCreate(StandAttachments.PROGRESS).standId(), StandProgress.THE_WORLD, "Player 2 receives The World without duplicate");
-
-        var cycle2 = StandAssignments.getCycle(server);
-        test.assertValueEqual(cycle2.generation(), 1, "Still generation 1 after second unique Stand");
-        test.assertValueEqual(cycle2.used(), List.of(StandProgress.STAR_PLATINUM, StandProgress.THE_WORLD), "Both Stands reserved in generation 1");
-
-        // Player 3 prefers Star Platinum (provisional 1). Generation 1 is full, so generation 2 begins!
-        var player3 = player(test, 0);
-        player3.setGameMode(GameType.CREATIVE);
-        StandAssignments.setProvisional(player3, 1);
-        test.assertTrue(use(player3) == InteractionResult.SUCCESS, "Creative arrow use succeeds for Player 3");
-        test.assertValueEqual(player3.getAttachedOrCreate(StandAttachments.PROGRESS).standId(), StandProgress.STAR_PLATINUM, "Player 3 receives Star Platinum in generation 2");
-
-        var cycle3 = StandAssignments.getCycle(server);
-        test.assertValueEqual(cycle3.generation(), 2, "Generation advances to 2");
-        test.assertValueEqual(cycle3.used(), List.of(StandProgress.STAR_PLATINUM), "Generation 2 has Star Platinum reserved");
+    public void successfulArrowSequenceUsesEveryPlayableStandBeforeNextGeneration(GameTestHelper test) {
+        var server=test.getLevel().getServer();var catalog=com.github.standobyte.jojo.core.StandDefinitions.naturalPool();
+        StandAssignments.setCycle(server,StandAssignments.WorldCycle.INITIAL);
+        var received=new java.util.HashSet<String>();var players=new java.util.ArrayList<ServerPlayer>();
+        try {
+            for(int i=0;i<=catalog.size();i++) {
+                var player=player(test,0);players.add(player);player.setGameMode(GameType.CREATIVE);
+                StandAssignments.setProvisional(player,1);
+                test.assertTrue(use(player)==InteractionResult.SUCCESS,"Actual arrow awakens the next player");
+                String stand=player.getAttachedOrCreate(StandAttachments.PROGRESS).standId();
+                var cycle=StandAssignments.getCycle(server);
+                if(i<catalog.size()) {
+                    test.assertTrue(received.add(stand),"No duplicate while an unused playable Stand remains");
+                    test.assertValueEqual(cycle.generation(),1,"All unique awakenings share generation1");
+                    test.assertValueEqual(cycle.used().size(),i+1,"Exactly one reservation per successful awakening");
+                } else {
+                    test.assertValueEqual(stand,StandProgress.STAR_PLATINUM,"Preference wins again after every playable Stand awakened");
+                    test.assertValueEqual(cycle.generation(),2,"Next generation begins only after complete current pool");
+                    test.assertValueEqual(cycle.used(),List.of(StandProgress.STAR_PLATINUM),"New generation starts with one reservation");
+                }
+            }
+            test.assertValueEqual(received,new java.util.HashSet<>(catalog),"Actual arrows cover complete integrated Stand pool");
+        } finally {players.forEach(player->{StandService.dismiss(player);server.getPlayerList().remove(player);});}
         test.succeed();
     }
 
     @GameTest(maxTicks = 450, environment = "jojo:assignment_2")
     public void grantTheWorldAvailableSurvivalArrow(GameTestHelper test) {
         var server = test.getLevel().getServer();
-        // Pre-reserve Star Platinum so the remaining available Stand in generation 1 is The World
-        StandAssignments.setCycle(server, new StandAssignments.WorldCycle(1, List.of(StandProgress.STAR_PLATINUM)));
+        // Reserve every other currently playable Stand; this is independent of future catalog growth.
+        StandAssignments.setCycle(server, new StandAssignments.WorldCycle(1, com.github.standobyte.jojo.core.StandDefinitions.naturalPool().stream().filter(id->!id.equals(StandProgress.THE_WORLD)).toList()));
 
         var player = player(test, 30);
         test.assertTrue(use(player) == InteractionResult.SUCCESS, "Survival arrow use starts");
@@ -91,7 +78,7 @@ public final class StandAssignmentGameTest {
                 .thenExecute(() -> {
                     test.assertTrue(player.isAlive(), "Player survived virus to awaken The World");
                     var cycle = StandAssignments.getCycle(server);
-                    test.assertValueEqual(cycle.used(), List.of(StandProgress.STAR_PLATINUM, StandProgress.THE_WORLD), "Both Stands reserved in generation 1");
+                    test.assertValueEqual(new java.util.HashSet<>(cycle.used()), new java.util.HashSet<>(com.github.standobyte.jojo.core.StandDefinitions.naturalPool()), "Full current Stand pool is reserved");
                 }).thenSucceed();
     }
 

@@ -86,6 +86,11 @@ class ResolveProgressTest {
         assertEquals(state, state.trainTimeStop(0));
         assertEquals(0, ResolveProgress.EMPTY.trainTimeStop(100).trainingPoints());
         state = state.trainTimeStop(10000); assertEquals(95, state.trainingPoints()); assertEquals(100, state.timeStopTicks());
+        var vampire = state.trainTimeStop(400, 0.25F, 175);
+        assertEquals(175, vampire.trainingPoints()); assertEquals(180, vampire.timeStopTicks());
+        var lowBlood = vampire.trainTimeStop(20, 0.25F, 95);
+        assertEquals(180, lowBlood.trainingPoints()); assertEquals(180, lowBlood.timeStopTicks());
+        assertEquals(185, lowBlood.trainTimeStop(20).trainingPoints());
     }
     @Test void resolveBurstQuadruplesTrainingAndDeathKeepsIt() {
         var state = ResolveProgress.EMPTY.withLevel(4).attack(32500, 20).trainTimeStop(5);

@@ -32,7 +32,13 @@ public final class KnifeItem extends Item implements ProjectileItem {
         int count = player.isShiftKeyDown() ? 1 : Math.min(stack.getCount(), MAX_KNIVES_THROW);
         if (count <= 0) return InteractionResult.FAIL;
         if (!level.isClientSide()) {
-            throwVolley(level, player, count, null);
+            if (stack.getCount() == 1 && player instanceof ServerPlayer serverPlayer
+                    && player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).getItem() instanceof StoneMaskItem
+                    && VampireService.activateMask(serverPlayer)) {
+                player.hurtServer((net.minecraft.server.level.ServerLevel) level, player.damageSources().playerAttack(player), 1F);
+                return InteractionResult.SUCCESS;
+            }
+            throwVolley(level, player, count, null, stack);
             // The original primary throw sound really uses volume zero (KnifeItem:92).
             playThrowSound(level, player.getX(), player.getY(), player.getZ(), count, 0F);
             player.getCooldowns().addCooldown(stack, count * 3);
@@ -45,12 +51,14 @@ public final class KnifeItem extends Item implements ProjectileItem {
         return InteractionResult.SUCCESS;
     }
 
-    static void throwVolley(Level level, Player player, int count, StarPlatinumEntity stand) {
+    static void throwVolley(Level level, Player player, int count, StarPlatinumEntity stand) { throwVolley(level,player,count,stand,ItemStack.EMPTY); }
+    static void throwVolley(Level level, Player player, int count, StarPlatinumEntity stand, ItemStack source) {
         for (int i = 0; i < count; i++) {
             var knife = new KnifeEntity(level, player);
             if (stand != null) knife.setPos(stand.getX(), stand.getEyeY() - 0.1, stand.getZ());
             knife.setTimeStopFlightTicks(5);
             knife.shootFromRotation(player, player.getXRot(), player.getYRot(), 0F, 1.5F, i == 0 ? 1F : 16F);
+            if(i==0)com.github.standobyte.jojo.fabric.stand.tracking.TrackingHooks.projectileCreated(knife,source,true);
             level.addFreshEntity(knife);
         }
     }

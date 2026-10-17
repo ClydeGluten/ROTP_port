@@ -14,7 +14,7 @@ class StandAllocationTest {
     @Test
     void coreSequence_preferenceHonoredWhenUnused() {
         var cycle = StandAllocation.StandCycle.INITIAL;
-        var result = StandAllocation.allocate(cycle, 1);
+        var result = StandAllocation.allocate(cycle, 1, List.of(SP,TW), new Random(1));
         assertEquals(SP, result.standId(), "Provisional 1 should receive Star Platinum when unused");
         assertEquals(1, result.newCycle().generation());
         assertEquals(List.of(SP), result.newCycle().reserved());
@@ -24,7 +24,7 @@ class StandAllocationTest {
     @Test
     void coreSequence_fallbackToAvailableWhenPreferenceUsed() {
         var cycle = new StandAllocation.StandCycle(1, List.of(SP));
-        var result = StandAllocation.allocate(cycle, 1);
+        var result = StandAllocation.allocate(cycle, 1, List.of(SP,TW), new Random(1));
         assertEquals(TW, result.standId(), "Should fallback to remaining unused Stand (The World) when preference is used");
         assertEquals(1, result.newCycle().generation());
         assertEquals(List.of(SP, TW), result.newCycle().reserved());
@@ -34,7 +34,7 @@ class StandAllocationTest {
     @Test
     void coreSequence_advancesGenerationWhenAllReserved() {
         var cycle = new StandAllocation.StandCycle(1, List.of(SP, TW));
-        var result = StandAllocation.allocate(cycle, 1);
+        var result = StandAllocation.allocate(cycle, 1, List.of(SP,TW), new Random(1));
         assertEquals(SP, result.standId(), "Preference should be honored in new generation");
         assertEquals(2, result.newCycle().generation(), "Generation should increment when pool was exhausted");
         assertEquals(List.of(SP), result.newCycle().reserved());
@@ -44,20 +44,16 @@ class StandAllocationTest {
     @Test
     void coreSequence_fullGenerationsCycleWithoutDuplicates() {
         var cycle = StandAllocation.StandCycle.INITIAL;
-        for (int gen = 1; gen <= 5; gen++) {
-            // First allocation in generation
-            var first = StandAllocation.allocate(cycle, 1);
-            assertEquals(SP, first.standId());
-            assertEquals(gen, first.newCycle().generation());
-            assertEquals(List.of(SP), first.newCycle().reserved());
-
-            // Second allocation in generation (preference asks for SP again, but must receive TW)
-            var second = StandAllocation.allocate(first.newCycle(), 1);
-            assertEquals(TW, second.standId(), "Must not duplicate SP within generation " + gen);
-            assertEquals(gen, second.newCycle().generation());
-            assertEquals(List.of(SP, TW), second.newCycle().reserved());
-
-            cycle = second.newCycle();
+        var catalog=StandAllocation.DEFAULT_CATALOG;
+        for (int gen=1;gen<=5;gen++) {
+            var received=new java.util.HashSet<String>();
+            for(int i=0;i<catalog.size();i++) {
+                var next=StandAllocation.allocate(cycle,1,catalog,new Random(i));
+                assertTrue(received.add(next.standId()),"No duplicate before every playable Stand awakens");
+                assertEquals(gen,next.newCycle().generation());
+                cycle=next.newCycle();
+            }
+            assertEquals(new java.util.HashSet<>(catalog),received);
         }
     }
 
@@ -69,7 +65,7 @@ class StandAllocationTest {
         var negativeCycle = new StandAllocation.StandCycle(-10, List.of());
         assertEquals(1, negativeCycle.generation(), "Negative generation should clamp to 1");
 
-        var result = StandAllocation.allocate(negativeCycle, 2);
+        var result = StandAllocation.allocate(negativeCycle, 2, List.of(SP,TW), new Random(1));
         assertEquals(TW, result.standId());
         assertEquals(1, result.newCycle().generation());
     }
@@ -100,7 +96,7 @@ class StandAllocationTest {
         // Reserved list contains unknown stands that do not exist in the current catalog
         var corrupted = new StandAllocation.StandCycle(1, List.of("jojo:silver_chariot", "jojo:magicians_red", SP));
         // Available should only see SP as used; TW should still be available in this generation
-        var result = StandAllocation.allocate(corrupted, 1);
+        var result = StandAllocation.allocate(corrupted, 1, List.of(SP,TW), new Random(1));
         assertEquals(TW, result.standId(), "Unknown reserved stands must not prevent remaining catalog stand from being allocated");
         assertEquals(1, result.newCycle().generation(), "Generation should not advance prematurely due to invalid reserved IDs");
         assertEquals(List.of(SP, TW), result.newCycle().reserved(), "Reserved list should only retain valid catalog stands");
@@ -137,7 +133,7 @@ class StandAllocationTest {
         assertEquals(List.of(SP), seeded.reserved(), "Seeding should reserve old owner's Stand in current generation");
 
         // First new arrow awakening requests provisional 1 (SP)
-        var arrowResult = StandAllocation.allocate(seeded, 1);
+        var arrowResult = StandAllocation.allocate(seeded, 1, List.of(SP,TW), new Random(1));
         assertEquals(TW, arrowResult.standId(), "First new arrow awakening should receive The World, avoiding duplicate Star Platinum");
         assertEquals(List.of(SP, TW), arrowResult.newCycle().reserved());
     }

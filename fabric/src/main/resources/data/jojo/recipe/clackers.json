@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " s ",
+    "i i"
+  ],
+  "key": {
+    "i": "#c:ingots/iron",
+    "s": "#c:strings"
+  },
+  "result": {
+    "id": "jojo:clackers"
+  }
+}

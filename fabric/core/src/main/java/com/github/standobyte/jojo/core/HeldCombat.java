@@ -76,12 +76,15 @@ public final class HeldCombat {
 
     /** Original block stamina and physical-resistance formulas, including a partial block on exhaustion. */
     public static GuardResult guard(float damage, float stamina, double durability, double power, boolean creative) {
+        return guard(damage,stamina,durability,power,creative,1);
+    }
+    public static GuardResult guard(float damage,float stamina,double durability,double power,boolean creative,double resistanceMultiplier){
         if (!Float.isFinite(damage) || damage < 0 || !Float.isFinite(stamina) || stamina < 0) {
             throw new IllegalArgumentException("Invalid guard input");
         }
         float cost = StandStatFormulas.getBlockStaminaCost(damage);
         float ratio = creative || cost == 0 ? 1 : Math.min(stamina / cost, 1);
-        float resistance = StandStatFormulas.getPhysicalResistance(durability, power, ratio, damage, 1);
+        float resistance = StandStatFormulas.getPhysicalResistance(durability, power, ratio, damage, resistanceMultiplier);
         return new GuardResult(damage * (1 - resistance), creative ? stamina : Math.max(0, stamina - cost), !creative && stamina < cost);
     }
 }

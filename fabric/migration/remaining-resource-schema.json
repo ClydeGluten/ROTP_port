@@ -1,0 +1,243 @@
+{
+  "version": 1,
+  "target": "26.3",
+  "description": "Explicit active resource allowlist. Unlisted legacy assets are not converted. Reviewed JSON/NBT adapters require a source digest and review note; they are not automatic version upgrades.",
+  "resources": [
+    {
+      "id": "jojo:blade_hat",
+      "kind": "item_model",
+      "source": "src/main/resources/assets/jojo/models/item/blade_hat.json",
+      "target": "assets/jojo/models/item/blade_hat.json",
+      "item_definition": "assets/jojo/items/blade_hat.json"
+    },
+    {
+      "id": "jojo:slumbering_pillarman",
+      "kind": "blockstate",
+      "source": "src/main/resources/assets/jojo/blockstates/slumbering_pillarman.json",
+      "target": "assets/jojo/blockstates/slumbering_pillarman.json"
+    },
+    {
+      "id": "jojo:boiling_blood",
+      "kind": "blockstate",
+      "source": "src/main/resources/assets/jojo/blockstates/boiling_blood.json",
+      "target": "assets/jojo/blockstates/boiling_blood.json"
+    },
+    {
+      "id": "jojo:boiling_blood",
+      "kind": "block_model",
+      "source": "src/main/resources/assets/jojo/models/block/boiling_blood.json",
+      "target": "assets/jojo/models/block/boiling_blood.json"
+    },
+    {
+      "id": "jojo:pillarman_0_0",
+      "kind": "block_model",
+      "source": "src/main/resources/assets/jojo/models/block/pillarman_0_0.json",
+      "target": "assets/jojo/models/block/pillarman_0_0.json"
+    },
+    {
+      "id": "jojo:pillarman_0_1",
+      "kind": "block_model",
+      "source": "src/main/resources/assets/jojo/models/block/pillarman_0_1.json",
+      "target": "assets/jojo/models/block/pillarman_0_1.json"
+    },
+    {
+      "id": "jojo:pillarman_1_0",
+      "kind": "block_model",
+      "source": "src/main/resources/assets/jojo/models/block/pillarman_1_0.json",
+      "target": "assets/jojo/models/block/pillarman_1_0.json"
+    },
+    {
+      "id": "jojo:pillarman_1_1",
+      "kind": "block_model",
+      "source": "src/main/resources/assets/jojo/models/block/pillarman_1_1.json",
+      "target": "assets/jojo/models/block/pillarman_1_1.json"
+    },
+    {
+      "id": "jojo:pillarman_2_0",
+      "kind": "block_model",
+      "source": "src/main/resources/assets/jojo/models/block/pillarman_2_0.json",
+      "target": "assets/jojo/models/block/pillarman_2_0.json"
+    },
+    {
+      "id": "jojo:pillarman_2_1",
+      "kind": "block_model",
+      "source": "src/main/resources/assets/jojo/models/block/pillarman_2_1.json",
+      "target": "assets/jojo/models/block/pillarman_2_1.json"
+    },
+    {
+      "id": "jojo:slumbering_pillarman",
+      "kind": "item_model",
+      "source": "src/main/resources/assets/jojo/models/item/slumbering_pillarman.json",
+      "target": "assets/jojo/models/item/slumbering_pillarman.json",
+      "item_definition": "assets/jojo/items/slumbering_pillarman.json"
+    },
+    {
+      "id": "jojo:boiling_blood",
+      "kind": "particle",
+      "source": "src/main/resources/assets/jojo/particles/boiling_blood.json",
+      "target": "assets/jojo/particles/boiling_blood.json"
+    },
+    {
+      "id": "jojo:pillarman_temple/building",
+      "kind": "structure_copy",
+      "source": "src/main/resources/data/jojo/structures/pillarman_temple/building.nbt",
+      "target": "data/jojo/structure/pillarman_temple/building.nbt",
+      "source_sha256": "4013c8f7788811df181d99cdc89eec87392ce135abe5a5c85d238db9244da816",
+      "review": "Original DataVersion2586 template: vanilla states upgraded by StructureTemplateManager; custom slumbering/stone-mask IDs retained; EngravingEntity explicitly reads legacy TileX/Y/Z/Facing/TexId."
+    },
+    {
+      "id": "jojo:pillarman_temple/stairway",
+      "kind": "structure_copy",
+      "source": "src/main/resources/data/jojo/structures/pillarman_temple/stairway.nbt",
+      "target": "data/jojo/structure/pillarman_temple/stairway.nbt",
+      "source_sha256": "c9bc6119e3d4edbc4370cc139b48bbe96e9a081f5aa666d319dbd054c16920ab",
+      "review": "Original DataVersion2586 template: vanilla states upgraded by StructureTemplateManager; custom slumbering/stone-mask IDs retained; EngravingEntity explicitly reads legacy TileX/Y/Z/Facing/TexId."
+    },
+    {
+      "id": "jojo:pillarman_temple/corridor",
+      "kind": "structure_copy",
+      "source": "src/main/resources/data/jojo/structures/pillarman_temple/corridor.nbt",
+      "target": "data/jojo/structure/pillarman_temple/corridor.nbt",
+      "source_sha256": "0b4501d7395e3722efcaffb8faa6a4b8ec2b139a78ca95631540fca639f64fbc",
+      "review": "Original DataVersion2586 template: vanilla states upgraded by StructureTemplateManager; custom slumbering/stone-mask IDs retained; EngravingEntity explicitly reads legacy TileX/Y/Z/Facing/TexId."
+    },
+    {
+      "id": "jojo:pillarman_temple/bossroom",
+      "kind": "structure_copy",
+      "source": "src/main/resources/data/jojo/structures/pillarman_temple/bossroom.nbt",
+      "target": "data/jojo/structure/pillarman_temple/bossroom.nbt",
+      "source_sha256": "8e45e01d3d2803ba35b282758995082fa246fb461f07dcc30779f00dd0dc76fa",
+      "review": "Original DataVersion2586 template: vanilla states upgraded by StructureTemplateManager; custom slumbering/stone-mask IDs retained; EngravingEntity explicitly reads legacy TileX/Y/Z/Facing/TexId."
+    },
+    {
+      "id": "jojo:boiling_blood_bucket",
+      "kind": "forge_bucket",
+      "source": "src/main/resources/assets/jojo/models/item/boiling_blood_bucket.json",
+      "target": "assets/jojo/models/item/boiling_blood_bucket.json",
+      "item_definition": "assets/jojo/items/boiling_blood_bucket.json",
+      "mask": "fabric/src/main/resources/assets/jojo/textures/item/bucket_fluid_drip_mask.png",
+      "mask_sha256": "521f9f66e4cf2991af902a3fc52242e6eeae4f79d603cd6454c3b352cf9e533c",
+      "fluid_texture": "jojo:block/boiling_blood_still"
+    },
+    {
+      "id": "minecraft:lava",
+      "kind": "tag",
+      "source": "src/main/resources/data/minecraft/tags/fluids/lava.json",
+      "target": "data/minecraft/tags/fluid/lava.json"
+    },
+    {
+      "id": "jojo:jojo/pillarman_temple",
+      "kind": "reviewed_json",
+      "source": "src/main/resources/data/jojo/advancements/jojo/pillarman_temple.json",
+      "target": "data/jojo/advancement/jojo/pillarman_temple.json",
+      "source_sha256": "47c1e131c84dd0502161feb12888c81c3160ea3b02739f25546935b7b44dd566",
+      "review": "26.3 advancement icon id and location predicate mirror existing verified Hamon temple conversion; same original criterion/parent/title/requirements.",
+      "patches": [
+        {
+          "path": "/display/icon",
+          "value": {
+            "id": "jojo:slumbering_pillarman"
+          },
+          "reason": "Modern ItemStack icon uses id"
+        },
+        {
+          "path": "/criteria/in_temple/conditions",
+          "value": {
+            "player": {
+              "type": "minecraft:entity_properties",
+              "entity": "this",
+              "predicate": {
+                "minecraft:location": {
+                  "structures": "jojo:pillarman_temple"
+                }
+              }
+            }
+          },
+          "reason": "Modern location predicate component schema"
+        }
+      ],
+      "references": [
+        "data/jojo/advancement/jojo/buy_map.json"
+      ]
+    },
+    {
+      "id": "jojo:magicians_red_fire",
+      "kind": "blockstate",
+      "source": "src/main/resources/assets/jojo/blockstates/magicians_red_fire.json",
+      "target": "assets/jojo/blockstates/magicians_red_fire.json"
+    },
+    {
+      "id": "jojo:fire_floor0",
+      "kind": "block_model",
+      "source": "src/main/resources/assets/jojo/models/block/fire_floor0.json",
+      "target": "assets/jojo/models/block/fire_floor0.json"
+    },
+    {
+      "id": "jojo:fire_floor1",
+      "kind": "block_model",
+      "source": "src/main/resources/assets/jojo/models/block/fire_floor1.json",
+      "target": "assets/jojo/models/block/fire_floor1.json"
+    },
+    {
+      "id": "jojo:fire_side0",
+      "kind": "block_model",
+      "source": "src/main/resources/assets/jojo/models/block/fire_side0.json",
+      "target": "assets/jojo/models/block/fire_side0.json"
+    },
+    {
+      "id": "jojo:fire_side1",
+      "kind": "block_model",
+      "source": "src/main/resources/assets/jojo/models/block/fire_side1.json",
+      "target": "assets/jojo/models/block/fire_side1.json"
+    },
+    {
+      "id": "jojo:fire_side_alt0",
+      "kind": "block_model",
+      "source": "src/main/resources/assets/jojo/models/block/fire_side_alt0.json",
+      "target": "assets/jojo/models/block/fire_side_alt0.json"
+    },
+    {
+      "id": "jojo:fire_side_alt1",
+      "kind": "block_model",
+      "source": "src/main/resources/assets/jojo/models/block/fire_side_alt1.json",
+      "target": "assets/jojo/models/block/fire_side_alt1.json"
+    },
+    {
+      "id": "jojo:fire_up0",
+      "kind": "block_model",
+      "source": "src/main/resources/assets/jojo/models/block/fire_up0.json",
+      "target": "assets/jojo/models/block/fire_up0.json"
+    },
+    {
+      "id": "jojo:fire_up1",
+      "kind": "block_model",
+      "source": "src/main/resources/assets/jojo/models/block/fire_up1.json",
+      "target": "assets/jojo/models/block/fire_up1.json"
+    },
+    {
+      "id": "jojo:fire_up_alt0",
+      "kind": "block_model",
+      "source": "src/main/resources/assets/jojo/models/block/fire_up_alt0.json",
+      "target": "assets/jojo/models/block/fire_up_alt0.json"
+    },
+    {
+      "id": "jojo:fire_up_alt1",
+      "kind": "block_model",
+      "source": "src/main/resources/assets/jojo/models/block/fire_up_alt1.json",
+      "target": "assets/jojo/models/block/fire_up_alt1.json"
+    },
+    {
+      "id": "jojo:flame",
+      "kind": "particle",
+      "source": "src/main/resources/assets/jojo/particles/flame.json",
+      "target": "assets/jojo/particles/flame.json"
+    },
+    {
+      "id": "jojo:item_icon_mr_fireball",
+      "kind": "item_model",
+      "source": "src/main/resources/assets/jojo/models/item/item_icon_mr_fireball.json",
+      "target": "assets/jojo/models/item/item_icon_mr_fireball.json",
+      "item_definition": "assets/jojo/items/item_icon_mr_fireball.json"
+    }
+  ]
+}

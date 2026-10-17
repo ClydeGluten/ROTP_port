@@ -1,0 +1,44 @@
+{
+  "parent": "jojo:jojo/get_hamon",
+  "display": {
+    "icon": {
+      "id": "minecraft:feather"
+    },
+    "title": {
+      "translate": "advancements.jojo.hamon_chicken.title"
+    },
+    "description": {
+      "translate": "advancements.jojo.hamon_chicken.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "rewards": {
+    "experience": 100
+  },
+  "criteria": {
+    "charge_kill": {
+      "trigger": "jojo:hamon_charge_kill",
+      "conditions": {
+        "charged_entity": {
+          "type": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:entity_type": "minecraft:chicken"
+          }
+        },
+        "killed_power": {
+          "classification": "non_stand",
+          "type": "jojo:hamon"
+        }
+      }
+    }
+  },
+  "requirements": [
+    [
+      "charge_kill"
+    ]
+  ]
+}

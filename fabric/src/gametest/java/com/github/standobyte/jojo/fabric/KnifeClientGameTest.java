@@ -81,12 +81,15 @@ public final class KnifeClientGameTest implements FabricClientGameTest {
             ActionLayouts.set(StandProgress.THE_WORLD, ActionCatalog.defaults(true).select(false, "guard"));
         });
         context.getInput().lookAt(0, 0);
+        verifyDiscovery(context);
         verifyBundleModels(context, mode);
         context.getInput().pressKey(options -> options.keyHotbarSlots[0]);
         server.waitFor(minecraft -> minecraft.getPlayerList().getPlayer(uuid).getInventory().getSelectedSlot() == 0);
         equip(context, server, uuid, 16);
         context.getInput().pressKey(key(context, "key.jojo.fabric.summon"));
         context.waitFor(client -> StandView.ownStand(client) != null && StandSelection.isStandMode());
+        context.waitTicks(2);
+        context.takeScreenshot("knives-held-controls-hint-" + mode);
 
         // Original InputHandler gives a successful selected ability priority over item use.
         context.getInput().holdMouse(InputConstants.MOUSE_BUTTON_RIGHT);
@@ -316,6 +319,36 @@ public final class KnifeClientGameTest implements FabricClientGameTest {
             context.getInput().pressKey(InputConstants.KEY_ESCAPE);
             context.waitFor(client -> client.gui.screen() == null);
         }
+    }
+
+    private static void verifyDiscovery(ClientGameTestContext context) {
+        context.runOnClient(client -> {
+            net.minecraft.world.item.CreativeModeTabs.tryRebuildTabContents(client.level.enabledFeatures(), false, client.level.registryAccess());
+            if (net.minecraft.world.item.CreativeModeTabs.tabs().stream().noneMatch(tab ->
+                    tab.getDisplayName().getString().equals("Combat") && tab.getDisplayItems().stream().anyMatch(stack -> stack.is(StandItems.KNIFE))))
+                throw new AssertionError("Knives are missing from the actual Creative Combat tab");
+            if (net.minecraft.world.item.CreativeModeTabs.searchTab().getDisplayItems().stream().noneMatch(stack -> stack.is(StandItems.KNIFE)))
+                throw new AssertionError("Creative search cannot discover knives");
+            var stack = new ItemStack(StandItems.KNIFE, 16);
+            var tooltip = stack.getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(client.level), client.player,
+                    net.minecraft.world.item.TooltipFlag.Default.NORMAL).stream().map(net.minecraft.network.chat.Component::getString).toList();
+            if (tooltip.stream().noneMatch(line -> line.contains("iron ingot above a stick"))
+                    || tooltip.stream().noneMatch(line -> line.contains("The World") && line.contains("remaining stack"))
+                    || tooltip.stream().noneMatch(line -> line.contains("power hotbars") && line.contains(KeyMapping.get("jojo.key.disable_hotbars").getTranslatedKeyMessage().getString())))
+                throw new AssertionError("Actual inventory tooltip does not explain acquisition, The World, and hotbar bypass: " + tooltip);
+            var mapping = KeyMapping.get("jojo.key.disable_hotbars");
+            var original = net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper.getBoundKeyOf(mapping);
+            try {
+                mapping.setKey(InputConstants.Type.KEYBOARD.getOrCreate(InputConstants.KEY_O));
+                KeyMapping.resetMapping();
+                var hint = com.github.standobyte.jojo.fabric.client.KnifeClient.throwHint().getString();
+                if (!hint.startsWith(mapping.getTranslatedKeyMessage().getString() + " + "))
+                    throw new AssertionError("Knife instructions ignore the rebound bypass key: " + hint);
+            } finally {
+                mapping.setKey(original);
+                KeyMapping.resetMapping();
+            }
+        });
     }
 
     private static void equip(ClientGameTestContext context, TestServerContext server, UUID uuid, int count) {

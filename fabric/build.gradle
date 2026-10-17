@@ -53,6 +53,29 @@ java {
 
 tasks.withType(JavaCompile).configureEach { options.release = 25 }
 
+def remainingResources = layout.buildDirectory.dir('generated/remainingResources')
+def remainingModels = layout.buildDirectory.dir('generated/remainingStandModels')
+tasks.register('convertRemainingResources', Exec) {
+    inputs.file('src/main/resources/assets/jojo/textures/item/bucket_fluid_drip_mask.png')
+    commandLine 'python3', 'tools/convert_remaining_resources.py'
+    inputs.files(fileTree('tools') { include '*remaining*' }, fileTree('migration') { include 'remaining-*.json', 'fixtures/remaining-*.json' },
+            fileTree('../src/main/resources'))
+    outputs.dir remainingResources
+}
+tasks.register('generateRemainingStandModels', Exec) {
+    commandLine 'python3', 'tools/generate_remaining_stand_models.py'
+    inputs.files(fileTree('tools') { include '*remaining*' }, fileTree('migration') { include 'remaining-*.json', 'fixtures/remaining-*.json' },
+            fileTree('../src/main/java/com/github/standobyte/jojo/client/render/entity/model/stand'),
+            fileTree('../src/main/resources/assets/jojo/bb'), fileTree('../src/main/resources/assets/jojo/textures/entity/stand'))
+    outputs.dir remainingModels
+}
+sourceSets.main.resources.srcDir remainingResources
+sourceSets.main.resources.srcDir remainingModels.map { it.dir('resources') }
+sourceSets.client.java.srcDir remainingModels.map { it.dir('java') }
+tasks.named('processResources') { dependsOn 'convertRemainingResources', 'generateRemainingStandModels' }
+tasks.named('compileClientJava') { dependsOn 'generateRemainingStandModels' }
+tasks.named('sourcesJar') { dependsOn 'convertRemainingResources', 'generateRemainingStandModels' }
+
 processResources {
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') { expand version: project.version }
@@ -63,11 +86,55 @@ processResources {
         include 'assets/jojo/sounds/**'
         include 'assets/jojo/sounds.json'
         include 'assets/jojo/lang/**'
+        include 'assets/jojo/player_animation/vampire/vampire_claws.json'
+        include 'assets/jojo/player_animation/hamon/**'
+        include 'assets/jojo/player_animation/pillarman/**'
+        include 'assets/jojo/particles/divine_sandstorm.json'
+        include 'assets/jojo/particles/atmospheric_rift.json'
+        include 'assets/jojo/particles/hamon_aura_green.json'
+        include 'assets/jojo/particles/light_spark.json'
+        include 'assets/jojo/particles/light_mode_flash.json'
+        include 'assets/jojo/particles/hamon_aura_rainbow.json'
     }
     doLast {
         def languageFile = new File(destinationDir, 'assets/jojo/lang/en_us.json')
         def translations = new groovy.json.JsonSlurper().parse(languageFile)
         translations.putAll([
+            'gamerule.jojo.abilities_break_blocks': 'JoJo abilities break blocks',
+            'gamerule.jojo.abilities_break_blocks.description': 'Allows JoJo abilities to destroy blocks.',
+            'jojo.fabric.mask.find': 'Found in jungle temple chests.',
+            'jojo.fabric.mask.use': 'Equip on your head, then use one held knife. Hold %s if power controls are active.',
+            'jojo.fabric.mask.full': 'Awakens full vampirism, including in a weak vampire.',
+            'jojo.fabric.mask.sun': 'Sunlight burns vampires. Seek shelter before activating.',
+            'jojo.fabric.vampire.controls': 'Press %s for Vampirism. Hold %s / %s and scroll or press a number to select actions.',
+            'jojo.fabric.vampire.awakened': 'Vampirism awakened. Press %s for vampire actions; press %s for controls and abilities.',
+            'jojo.fabric.vampire.full_status': 'Full vampire: Stone Mask awakening. Vampirism survives death.',
+            'jojo.fabric.vampire.weak_status': 'Weak vampire: Blood Gift awakening. Use a Stone Mask for full power. Lost on death.',
+            'jojo.fabric.vampire.blood': 'Blood: %s / %s',
+            'jojo.fabric.vampire.empty_hand': 'Claw, Blood Drain, Blood Gift and Freeze require an empty main hand.',
+            'jojo.fabric.vampire.drain_help': 'Blood Drain: hold the selected attack on a living target within 2 blocks. Undead and vampires cannot be drained.',
+            'jojo.fabric.vampire.claw_help': 'Claw Lacerate: full vampires only. Requires 45 blood; the original attack does not consume it.',
+            'jojo.fabric.vampire.gift_help': 'Blood Gift: target another player within 2 blocks, at 3 hearts or less. Keep over 5 hearts. Hold for 3 seconds; costs 300 blood and 5 hearts.',
+            'jojo.fabric.vampire.sun_help': 'Sunlight burns vampires and blocks healing. Seek shelter; blood fuels passive healing and stronger abilities.',
+            'jojo.fabric.vampire.advanced_help': 'Full vampires also gain Vaporization Freeze, Space Ripper Stingy Eyes, zombie summons and Evil Atmosphere. Hold eyes for at least one second, then release to fire.',
+            'jojo.fabric.vampire.leap_help': 'In Vampirism mode, press %s + %s for a leap. Blood level controls its strength.',
+            'jojo.fabric.vampire.cure_help': 'Cure: eat an enchanted golden apple while affected by Weakness V. Keep blood empty for 40 minutes, then wake from sleep. Beds and iron bars may accelerate progress.',
+            'jojo.fabric.vampire.coffin_help': 'Craft an oak coffin with matching wool. Sleep during the day to skip to night. Vampire coffin respawns keep you sheltered.',
+            'jojo.fabric.vampire.hamon_help': 'A former Hamon user retains the dangerous Hamon self-destruction action. Learn Hamon from a teacher before transforming.',
+            'jojo.fabric.progress.time_retained_training': 'Retained training: %s points. Restore at least 80%% blood to use the extended limit.',
+            'jojo.fabric.progress.vampire_gain_boost': 'Sustained combat boosts gains. Vampires receive no low-health Resolve bonus.',
+            'jojo.fabric.cost.vampirism_freeze': 'Consumes 0.45 blood per tick while held.',
+            'jojo.fabric.cost.vampirism_space_ripper_stingy_eyes': 'Requires %s blood, then 20 blood per beam tick.',
+            'jojo.fabric.cost.vampirism_zombie_summon': 'Consumes %s blood.',
+            'jojo.fabric.cost.vampirism_dark_aura': 'Consumes %s blood.',
+            'jojo.fabric.cost.vampirism_hamon_suicide': 'Damages you while held; potentially lethal.',
+            'jojo.fabric.vampire.time_shortcut': 'While vampiric, the shared J binding opens Vampirism. Use Time Stop from Stand mode, or assign a separate Time Stop key.',
+            'jojo.fabric.knife.throw': 'Throw up to 8: %s',
+            'jojo.fabric.knife.single': 'Throw one: %s + %s',
+            'jojo.fabric.knife.bypass': 'With power hotbars active: hold %s to use held items.',
+            'jojo.fabric.knife.world': 'The World throws up to 8 more from the remaining stack. Hold 16 for two full volleys.',
+            'jojo.fabric.knife.obtain': 'Craft 4: iron ingot above a stick. Creative tab: Combat.',
+            'jojo.fabric.knife.hint': '%s + %s: throw knives | %s: one',
             'key.jojo.fabric.blink': 'Quick move',
             'key.jojo.fabric.time_punch': 'The World time stop punch',
             'key.jojo.fabric.select': 'Legacy Stand action modifier (unused)',
@@ -87,7 +154,7 @@ processResources {
             'jojo.fabric.hud.recovery': 'Recovery: %s s',
             'jojo.fabric.hud.resume': '%s s left - resume',
             'jojo.fabric.hud.summon': '%s Summon first',
-            'jojo.fabric.progress.world_training': 'Training grows 0.1 points per tick of actually stopped time, 4x during a Resolve Burst, up to a 5-second maximum.',
+            'jojo.fabric.progress.world_training': 'Training grows 0.1 points per tick of actually stopped time, 4x during a Resolve Burst, up to a %s-second maximum.',
             'jojo.fabric.action.kick': 'Kick',
             'jojo.fabric.move.light': 'Punch',
             'jojo.fabric.move.heavy': 'Heavy Punch',
@@ -145,23 +212,23 @@ processResources {
             'jojo.fabric.progress.time_title': 'Time Stop Training',
             'jojo.fabric.progress.time_duration': 'Duration: %s s of %s s',
             'jojo.fabric.progress.time_points': 'Training: %s / %s points',
-            'jojo.fabric.progress.time_training': 'Training grows 0.25 points per tick of actually stopped time, 4x during a Resolve Burst, up to a 5-second maximum.',
-            'jojo.fabric.progress.narration': 'Stand progression. Resolve level %s. Resolve %s of %s. Time Stop lasts %s seconds, training %s of 95 points.',
-            'jojo.fabric.progress.narration.creative': 'Stand progression, Creative mode. Earned Resolve level %s. Resolve %s of %s. Earned Time Stop lasts %s seconds, training %s of 95 points.',
+            'jojo.fabric.progress.time_training': 'Training grows 0.25 points per tick of actually stopped time, 4x during a Resolve Burst, up to a %s-second maximum.',
+            'jojo.fabric.progress.narration': 'Stand progression. Resolve level %s. Resolve %s of %s. Time Stop lasts %s seconds, training %s of %s points.',
+            'jojo.fabric.progress.narration.creative': 'Stand progression, Creative mode. Earned Resolve level %s. Resolve %s of %s. Earned Time Stop lasts %s seconds, training %s of %s points.',
             'jojo.fabric.progress.narration.none': 'Stand progression. No Stand yet.',
             'key.jojo.fabric.progress': 'Stand progression',
             'jojo.fabric.progress.hud': 'Resolve %s: %s / %s',
             'jojo.fabric.progress.hint': '%s Stand progression',
             'jojo.fabric.progress.locked_action': '%s requires Resolve level %s. Open Stand progression for details.',
             'jojo.fabric.progress.level_up': 'Resolve level %s reached! Press %s to view your unlocked moves.',
-            'jojo.fabric.progress.time_creative': 'Creative access: full 5-second Time Stop.',
+            'jojo.fabric.progress.time_creative': 'Creative access: full %s-second Time Stop.',
             'key.category.jojo.powers': 'Ripples of the Past',
             'key.jojo.fabric.summon': 'Summon / dismiss Stand',
             'key.jojo.fabric.light': 'Stand light punch',
             'key.jojo.fabric.heavy': 'Stand heavy punch',
             'key.jojo.fabric.barrage': 'Stand barrage (hold)',
             'key.jojo.fabric.guard': 'Stand guard (hold)',
-                        'key.jojo.fabric.time_stop': 'Stop / resume time',
+            'key.jojo.fabric.time_stop': 'Stop / resume time (shared key yields to Non-Stand HUD)',
             'jojo.fabric.time_controls': '%s Stop / resume time',
             'jojo.fabric.time_unavailable': 'Time stop needs an idle Stand and 225 stamina. Cooldown: %s s',
             'jojo.fabric.time_active': 'Time stopped: %s s',
@@ -176,7 +243,7 @@ processResources {
             'jojo.fabric.arrow.use': 'Use to pierce yourself and awaken a Stand.',
             'jojo.fabric.arrow.cost': 'XP cost: 30 levels, +5 per previous Arrow awakening.',
             'jojo.fabric.arrow.danger': 'Without enough XP, the virus can kill you. Milk cannot cure it.',
-            'jojo.fabric.arrow.pool': 'Available Stands: Star Platinum and The World.',
+            'jojo.fabric.arrow.pool': 'Available Stands: Star Platinum, The World, Hierophant Green, Silver Chariot and Magician’s Red.',
             'jojo.fabric.arrow.infected': 'The Stand Virus is already active.',
             'jojo.fabric.arrow.started': 'Stand Virus: %s XP levels needed. Survive to awaken your Stand.',
             'jojo.fabric.arrow.awakened': 'Stand awakened! Summon: %s.',
@@ -196,3 +263,19 @@ processResources {
 }
 
 jar { from('../LICENSE') { rename { 'LICENSE_RipplesOfThePast' } } }
+
+// A focused client run keeps iteration short without changing the normal complete suite.
+tasks.named('processGametestResources') {
+    inputs.property 'clientGameTest', providers.gradleProperty('clientGameTest').getOrElse('all')
+    doLast {
+        def selected = providers.gradleProperty('clientGameTest').getOrNull()
+        if (selected != null) {
+            def metadata = new File(destinationDir, 'fabric.mod.json')
+            def json = new groovy.json.JsonSlurper().parse(metadata)
+            def tests = json.entrypoints['fabric-client-gametest'].findAll { it.tokenize('.').last() == selected }
+            if (tests.size() != 1) throw new GradleException("Unknown client GameTest: ${selected}")
+            json.entrypoints['fabric-client-gametest'] = tests
+            metadata.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(json))
+        }
+    }
+}

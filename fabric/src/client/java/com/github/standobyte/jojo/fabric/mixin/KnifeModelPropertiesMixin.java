@@ -1,6 +1,7 @@
 package com.github.standobyte.jojo.fabric.mixin;
 
 import com.github.standobyte.jojo.fabric.client.KnifeCountProperty;
+import com.github.standobyte.jojo.fabric.client.StoneMaskActivationProperty;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.client.renderer.item.properties.numeric.RangeSelectItemModelProperties;
 import net.minecraft.client.renderer.item.properties.numeric.RangeSelectItemModelProperty;
@@ -22,5 +23,6 @@ public abstract class KnifeModelPropertiesMixin {
     @Inject(method = "bootstrap", at = @At("TAIL"))
     private static void jojoRegisterKnifeCount(CallbackInfo ci) {
         ID_MAPPER.put(Identifier.fromNamespaceAndPath("jojo", "count"), KnifeCountProperty.MAP_CODEC);
+        ID_MAPPER.put(Identifier.fromNamespaceAndPath("jojo", "stone_mask_activated"), StoneMaskActivationProperty.MAP_CODEC);
     }
 }

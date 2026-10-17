@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "#minecraft:wool",
+    "#c:strings",
+    "jojo:oil"
+  ],
+  "result": {
+    "id": "jojo:molotov",
+    "count": 1
+  }
+}

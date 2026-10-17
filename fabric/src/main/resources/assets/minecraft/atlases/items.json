@@ -1,0 +1,11 @@
+{
+  "sources": [
+    { "type": "minecraft:single", "resource": "jojo:hamon/crimson_bubble" },
+    { "type": "minecraft:single", "resource": "jojo:hamon/natural_talent" },
+    { "type": "minecraft:single", "resource": "jojo:action/vampirism_freeze" },
+    { "type": "minecraft:single", "resource": "jojo:vanilla_1_16_5/item/spawn_egg" },
+    { "type": "minecraft:single", "resource": "jojo:vanilla_1_16_5/item/spawn_egg_overlay" },
+    { "type": "minecraft:single", "resource": "jojo:vanilla_1_16_5/item/filled_map" },
+    { "type": "minecraft:single", "resource": "jojo:vanilla_1_16_5/item/filled_map_markings" }
+  ]
+}

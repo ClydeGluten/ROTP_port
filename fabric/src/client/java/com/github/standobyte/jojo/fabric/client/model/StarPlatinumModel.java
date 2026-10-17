@@ -515,6 +515,11 @@ public class StarPlatinumModel extends EntityModel<StarPlatinumRenderState> {
         float progress = state.actionDuration > 0 ? Math.clamp(state.actionTicks / state.actionDuration, 0, 1) : 0;
         time = start + (end - start) * progress;
         applyClip(clip, clip.wrap(time));
+        // The original legacy HumanoidStandModel added aim after the keyed punch pose.
+        // Keep that layer when using its newer JSON clips, which key both arm pivots to zero.
+        float pitch = state.meleePitch();
+        bones.get("leftArmXRot").xRot += pitch;
+        bones.get("rightArmXRot").xRot += pitch;
     }
 
     /**

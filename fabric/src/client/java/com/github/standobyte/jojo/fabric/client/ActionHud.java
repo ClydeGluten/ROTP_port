@@ -1,9 +1,15 @@
 package com.github.standobyte.jojo.fabric.client;
 
+import com.github.standobyte.jojo.fabric.client.pillarman.PillarmanClient;
+import com.github.standobyte.jojo.fabric.client.pillarman.PillarmanHud;
+import com.github.standobyte.jojo.fabric.client.pillarman.PillarmanActionCatalog;
+
 import com.github.standobyte.jojo.fabric.RipplesFabric;
 import com.github.standobyte.jojo.fabric.StandArrowItem;
 import com.github.standobyte.jojo.fabric.StandAttachments;
 import com.github.standobyte.jojo.fabric.StandHudState;
+import com.github.standobyte.jojo.fabric.VampireAttachments;
+import com.github.standobyte.jojo.fabric.VampireHudState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -11,12 +17,12 @@ import net.minecraft.resources.Identifier;
 import java.util.List;
 
 /**
- * Stand-only port of 1.16 ActionsOverlayGui, using its default ClientModSettings:
+ * Port of 1.16 ActionsOverlayGui, using its default ClientModSettings:
  * TOP_LEFT bars/hotbars, FADE_OUT text, and folding hotbars. Rendering adapters
  * replace MatrixStack/RenderSystem with 26.3's GuiGraphicsExtractor.
  */
 public final class ActionHud {
-    static final Identifier OVERLAY_LOCATION = RipplesFabric.id("textures/gui/overlay.png");
+    public static final Identifier OVERLAY_LOCATION = RipplesFabric.id("textures/gui/overlay.png");
     private static final Identifier RADIAL_INDICATOR = RipplesFabric.id("textures/gui/radial_indicator.png");
     private static final OriginalHudBars BARS = new OriginalHudBars();
     private static final OriginalHudFade POWER_NAME = new OriginalHudFade(40, 10);
@@ -28,33 +34,44 @@ public final class ActionHud {
     private static String lastStand = "";
     private static int lastTick;
     private static boolean previousMode;
+    private static boolean previousVampireMode;
     private static int previousCharge, crosshairFlashTicks;
 
     /** Input adapter may reuse the original one-cycle resource-warning effect on a rejected action. */
     public static void staminaRejected() { BARS.triggerRedHighlight(1); }
+    public static void bloodRejected() { BARS.triggerBloodHighlight(); }
 
     public static void render(GuiGraphicsExtractor g, float partialTick, boolean standMode,
                               boolean attackFocused, boolean abilityFocused, boolean hotbarsDisabled) {
         var client = Minecraft.getInstance();
         if (client.player == null || client.gui.hud.isHidden() || !client.player.isAlive() || client.player.isSpectator()) return;
-        update(client, standMode, attackFocused, abilityFocused);
+        boolean vampireMode = VampireClient.isMode();
+        boolean hamonMode = HamonClient.isMode();
+        boolean zombieMode = ZombieClient.isMode();
+        boolean pillarMode = PillarmanClient.isMode();
+        boolean powerMode = standMode || StandSelection.isNonStandMode();
+        update(client, powerMode, attackFocused, abilityFocused);
         var progress = client.player.getAttachedOrCreate(StandAttachments.PROGRESS);
-        if (!progress.hasStand()) { renderArrowFeedback(g); return; }
-        int color = progress.hasTheWorld() ? 0xFFD800 : 0x8E45FF; // ModStandsInit registry colors.
-        int x = 4, y = standMode ? 4 + OriginalHudBars.BARS_WIDTH_PX + 4 : 4;
-        BARS.render(g, 4, 4, standMode, color, partialTick);
+        if (!progress.hasStand()) renderArrowFeedback(g);
+        if (!progress.hasStand() && !StandSelection.nonStandPlayable()) return;
+        int color = pillarMode ? PillarmanHud.COLOR : zombieMode ? ZombieHud.COLOR : hamonMode ? HamonHud.COLOR : vampireMode ? 0xFF0000 : ActionCatalog.standColor(); // Original registry colors.
+        int x = 4, y = powerMode ? 4 + OriginalHudBars.BARS_WIDTH_PX + 4 : 4;
+        HamonHud.render(g, 4, 4, partialTick);
+        int zombieBarHeight = ZombieHud.render(g, 4, 4, partialTick) + PillarmanHud.render(g, 4, 4, partialTick);
+        BARS.render(g, 4, zombieBarHeight > 0 ? 4 + zombieBarHeight : HamonClient.playable() ? HamonClient.isMode() ? 16 : 13 : 4, standMode, ActionCatalog.standColor(), partialTick);
         renderPowerIcon(g, x, y);
-        if (standMode) {
+        if (powerMode) {
             var snapshot = client.player.getAttachedOrCreate(StandAttachments.HUD);
-            var layout = ActionLayouts.current();
-            List<String> attacks = layout.enabledActions(true), abilities = layout.enabledActions(false);
+            List<String> attacks = StandSelection.visibleActions(true), abilities = StandSelection.visibleActions(false);
             if (!attacks.isEmpty()) renderActionsHotbar(g, x, y, true, attacks, StandSelection.selectedAction(true),
                     snapshot, attackFocused, hotbarsDisabled, color, partialTick);
             if (!abilities.isEmpty()) renderActionsHotbar(g, x, y + (attacks.isEmpty() ? 0 : getHotbarsYDiff()), false,
                     abilities, StandSelection.selectedAction(false), snapshot, abilityFocused, hotbarsDisabled, color, partialTick);
             drawPowerName(g, x, y, color, partialTick);
-            renderIconBarAtCrosshair(g);
-            renderCrosshair(g, snapshot, partialTick);
+            if (!StandSelection.isNonStandMode()) {
+                renderIconBarAtCrosshair(g);
+                renderCrosshair(g, snapshot, partialTick);
+            } else if (vampireMode || zombieMode || pillarMode) renderVampireCrosshair(g, partialTick);
         }
         // Retain the port's regional Time Stop visual/countdown for frozen observers.
         if (TimeStopClient.isActive()) {
@@ -66,10 +83,10 @@ public final class ActionHud {
 
     /** ActionsOverlayGui.tick/setPowerMode/scrollAction, driven by the client GUI tick counter. */
     private static void update(Minecraft client, boolean mode, boolean attackFocused, boolean abilityFocused) {
-        String stand = client.player.getAttachedOrCreate(StandAttachments.PROGRESS).standId();
+        String stand = ActionLayouts.currentId();
         int tick = client.gui.hud.getGuiTicks();
         if (session != client.level || !stand.equals(lastStand)) {
-            session = client.level; lastStand = stand; lastTick = tick; previousMode = false;
+            session = client.level; lastStand = stand; lastTick = tick; previousMode = previousVampireMode = false;
             BARS.reset(); POWER_NAME.clear();
             previousCharge = crosshairFlashTicks = 0;
             for (int row = 0; row < 2; row++) {
@@ -86,12 +103,14 @@ public final class ActionHud {
         var snapshot = client.player.getAttachedOrCreate(StandAttachments.HUD);
         if (previousCharge > 0 && snapshot.charge() == 0 && snapshot.activeStop() > 0) crosshairFlashTicks = 8;
         previousCharge = snapshot.charge();
-        if (mode != previousMode) {
+        if (mode != previousMode || VampireClient.isMode() != previousVampireMode) {
+            BARS.reveal();
             if (mode) {
                 POWER_NAME.reset();
                 for (int row = 0; row < 2; row++) { NAMES[row].reset(); FOLD[row].reset(); }
             } else BARS.reveal();
             previousMode = mode;
+            previousVampireMode = VampireClient.isMode();
         }
         if (mode) {
             for (int row = 0; row < 2; row++) {
@@ -149,7 +168,7 @@ public final class ActionHud {
         var client = Minecraft.getInstance();
         var progress = client.player.getAttachedOrCreate(StandAttachments.PROGRESS);
         int cooldown = move.cooldown(snapshot);
-        boolean available = move.unlocked() && cooldown <= 0 && (!move.requiresManifestation() || StandView.ownStand(client) != null)
+        boolean available = move.pillar() ? PillarmanClient.available(move) : move.registered() ? move.available() : move.zombie() ? ZombieClient.available(move) : move.hamon() ? HamonClient.available(move) : move.vampire() ? VampireClient.available(move) : move.unlocked() && cooldown <= 0 && (!move.requiresManifestation() || StandView.ownManifestation(client) != null)
                 && (!move.requiresStaminaUpfront() || client.player.isCreative() || progress.stamina() >= move.cost())
                 && (move.canReplaceRecovery() || snapshot.recovery() <= 0)
                 && (snapshot.charge() <= 0 || move.id().equals("resume"));
@@ -165,8 +184,15 @@ public final class ActionHud {
                 OriginalHudDraw.fill(g, x + leftCut, y + 16 * (1 - ratio), cutWidth, 16 * ratio, 0x7FFFFFFF);
             }
         }
+        if (move.registered()) {
+            var view = move.snapshot();
+            if (view != null && view.training() >= 0 && view.maximum() > 0 && view.training() < view.maximum()) {
+                OriginalHudDraw.fill(g, x + 2, y + 13, 13, 2, 0xFF000000);
+                OriginalHudDraw.fill(g, x + 2, y + 13, Math.clamp(view.training() / view.maximum(), 0, 1) * 13, 1, 0xFF00FF00);
+            }
+        }
         if (move.id().equals("time_stop")) {
-            float training = client.player.isCreative() ? 1 : StandAttachments.resolve(client.player).trainingPoints() / 95F;
+            float training = client.player.isCreative() ? 1 : StandAttachments.resolve(client.player).trainingPoints() / (com.github.standobyte.jojo.fabric.ProgressionService.timeStopMaximum(client.player) - 5F);
             if (training >= 0 && training < 1) {
                 OriginalHudDraw.fill(g, x + 2, y + 13, 13, 2, 0xFF000000);
                 OriginalHudDraw.fill(g, x + 2, y + 13, training * 13, 1, 0xFF00FF00);
@@ -174,7 +200,7 @@ public final class ActionHud {
         }
         if (selected) {
             boolean finisher = move.id().equals("uppercut") || move.id().equals("kick");
-            OriginalHotbarRenderer.renderSlotSelection(g, x, y, hotbarAlpha, finisher && available);
+            OriginalHotbarRenderer.renderSlotSelection(g, x, y, hotbarAlpha, finisher && available || move.pillar() && PillarmanClient.greenSelection(move.id()) || move.zombie() && ZombieClient.greenSelection(move.id()));
         }
     }
 
@@ -191,7 +217,7 @@ public final class ActionHud {
             ActionCatalog.Move shift = switch (id) {
                 case "light", "barrage" -> ActionCatalog.move("heavy");
                 case "time_stop" -> ActionCatalog.move("blink");
-                default -> null;
+                default -> moveShift(id);
             };
             if (shift != null && shift.unlocked()) name = Component.translatable("jojo.overlay.shift", name,
                     Component.keybind(Minecraft.getInstance().options.keyShift.getName()), shift.name());
@@ -201,14 +227,36 @@ public final class ActionHud {
         OriginalHudDraw.text(g, name, x + 12, y + 16 + 3, color, alpha);
     }
 
+    private static ActionCatalog.Move moveShift(String id) {
+        if (id.startsWith("pillarman_")) { var action = PillarmanActionCatalog.get(id); return action == null || action.shift().isEmpty() ? null : ActionCatalog.move(action.shift()); }
+        if (id.indexOf(':') > 0) return ActionCatalog.shifted(id);
+        if (!ActionCatalog.move(id).hamon()) return null;
+        String shift = com.github.standobyte.jojo.fabric.HamonActionCatalog.shift(id);
+        return shift == null || shift.equals(id) || shift.isEmpty() ? null : ActionCatalog.move(shift);
+    }
     private static void renderPowerIcon(GuiGraphicsExtractor g, int x, int y) {
-        if (StandView.ownStand(Minecraft.getInstance()) == null) return;
-        String stand = ActionCatalog.world() ? "the_world" : "star_platinum";
+        if (PillarmanClient.isMode()) { OriginalHudDraw.blit(g, RipplesFabric.id("textures/power/pillarman.png"), x, y, 0, 0, 16, 16, 16, -1); return; }
+        if (ZombieClient.isMode()) { OriginalHudDraw.blit(g, RipplesFabric.id("textures/power/zombie.png"), x, y, 0, 0, 16, 16, 16, -1); return; }
+        if (HamonClient.isMode()) { OriginalHudDraw.blit(g, RipplesFabric.id("textures/power/hamon.png"), x, y, 0, 0, 16, 16, 16, -1); return; }
+        if (VampireClient.isMode()) {
+            OriginalHudDraw.blit(g, RipplesFabric.id("textures/power/vampirism.png"), x, y, 0, 0, 16, 16, 16, 0xFFFFFFFF);
+            return;
+        }
+        if (com.github.standobyte.jojo.core.StandDefinitions.find(ActionCatalog.standId()).map(d -> d.kind() == com.github.standobyte.jojo.core.StandDefinitions.Kind.ENTITY).orElse(true) && StandView.ownManifestation(Minecraft.getInstance()) == null) return;
+        String stand = ActionCatalog.standPath();
         OriginalHudDraw.blit(g, RipplesFabric.id("textures/power/" + stand + ".png"), x, y,
                 0, 0, 16, 16, 16, 0xFFFFFFFF);
     }
     private static void drawPowerName(GuiGraphicsExtractor g, int x, int y, int color, float partialTick) {
-        String stand = ActionCatalog.world() ? "the_world" : "star_platinum";
+        if (PillarmanClient.isMode()) { OriginalHudDraw.text(g, PillarmanHud.powerName(), x + 19, y + (16 - Minecraft.getInstance().font.lineHeight) / 2, color, POWER_NAME.alpha(partialTick)); return; }
+        if (ZombieClient.isMode()) { OriginalHudDraw.text(g, ZombieHud.powerName(), x + 19, y + (16 - Minecraft.getInstance().font.lineHeight) / 2, color, POWER_NAME.alpha(partialTick)); return; }
+        if (HamonClient.isMode()) { OriginalHudDraw.text(g, Component.translatable("non_stand.jojo.hamon"), x + 19, y + (16 - Minecraft.getInstance().font.lineHeight) / 2, color, POWER_NAME.alpha(partialTick)); return; }
+        if (VampireClient.isMode()) {
+            OriginalHudDraw.text(g, Component.translatable("non_stand.jojo.vampirism"), x + 19,
+                    y + (16 - Minecraft.getInstance().font.lineHeight) / 2, color, POWER_NAME.alpha(partialTick));
+            return;
+        }
+        String stand = ActionCatalog.standPath();
         OriginalHudDraw.text(g, Component.translatable("stand.jojo." + stand), x + 19,
                 y + (16 - Minecraft.getInstance().font.lineHeight) / 2, color, POWER_NAME.alpha(partialTick));
     }
@@ -216,7 +264,7 @@ public final class ActionHud {
     /** ActionsOverlayGui.renderIconBarAtCrosshair/renderFilledIcon, original 18px finisher sprite. */
     private static void renderIconBarAtCrosshair(GuiGraphicsExtractor g) {
         var client = Minecraft.getInstance();
-        var stand = StandView.ownStand(client);
+        var stand = StandView.ownManifestation(client);
         if (stand == null || !StandAttachments.resolve(client.player).unlocked(1, client.player.isCreative())) return;
         float fill = stand.finisherCharge();
         if (fill <= 0) return;
@@ -229,6 +277,45 @@ public final class ActionHud {
 
     private static void renderActionHoldProgress(GuiGraphicsExtractor g, ActionCatalog.Move move, StandHudState snapshot,
                                                  float x, float y, boolean disabled, float partialTick) {
+        if (move.pillar() && PillarmanClient.chargeDuration(move.id()) > 0) {
+            int ticks = PillarmanClient.chargeTicks(move.id());
+            int degrees = Math.clamp((int)((ticks + partialTick) / PillarmanClient.chargeDuration(move.id()) * 360), 0, 360);
+            OriginalHudDraw.blit(g, RADIAL_INDICATOR, x, y, degrees % 19 * 13, degrees / 19 * 13, 13, 13, 256,
+                    OriginalHudDraw.color(0xFFFFFF, disabled ? .25F : ticks > 0 ? 1 : .75F));
+            return;
+        }
+        if (move.registered() && move.definition().fireAfter() > 0) {
+            var state = Minecraft.getInstance().player.getAttachedOrCreate(StandHudState.REGISTERED);
+            int ticks = state.held().filter(id -> id.toString().equals(move.id())).isPresent() ? state.heldTicks() : 0;
+            int degrees = Math.clamp((int)((ticks + partialTick) / move.definition().fireAfter() * 360), 0, 360);
+            OriginalHudDraw.blit(g, RADIAL_INDICATOR, x, y, degrees % 19 * 13, degrees / 19 * 13, 13, 13, 256,
+                    OriginalHudDraw.color(0xFFFFFF, disabled ? .25F : ticks > 0 ? 1 : .75F));
+            return;
+        }
+        if (move.zombie() && ZombieClient.chargeDuration(move.id()) > 0) {
+            int ticks = ZombieClient.chargeTicks(move.id());
+            float ratio = ticks > 0 ? Math.clamp((ticks + partialTick) / ZombieClient.chargeDuration(move.id()), 0, 1) : 0;
+            int degrees = Math.clamp((int)(ratio * 360), 0, 360);
+            OriginalHudDraw.blit(g, RADIAL_INDICATOR, x, y, degrees % 19 * 13, degrees / 19 * 13, 13, 13, 256,
+                    OriginalHudDraw.color(0xFFFFFF, disabled ? .25F : ticks > 0 ? 1 : .75F));
+            return;
+        }
+        if (move.hamon() && HamonClient.chargeDuration(move.id()) > 0) {
+            int ticks = HamonClient.chargeTicks(move.id());
+            float ratio = ticks > 0 ? Math.clamp((ticks + partialTick) / HamonClient.chargeDuration(move.id()), 0, 1) : 0;
+            int degrees = Math.clamp((int)(ratio * 360), 0, 360);
+            OriginalHudDraw.blit(g, RADIAL_INDICATOR, x, y, degrees % 19 * 13, degrees / 19 * 13, 13, 13, 256, OriginalHudDraw.color(0xFFFFFF, disabled ? .25F : ticks > 0 ? 1 : .75F));
+            return;
+        }
+        if (move.vampire() && VampireClient.chargeDuration(move.id()) > 0) {
+            int ticks = VampireClient.chargeTicks(move.id());
+            float ratio = ticks > 0 ? Math.clamp((ticks + partialTick) / VampireClient.chargeDuration(move.id()), 0, 1) : 0;
+            int degrees = Math.clamp((int) (ratio * 360), 0, 360);
+            float alpha = disabled ? 0.25F : ticks > 0 ? 1 : 0.75F;
+            OriginalHudDraw.blit(g, RADIAL_INDICATOR, x, y, degrees % 19 * 13, degrees / 19 * 13,
+                    13, 13, 256, OriginalHudDraw.color(0xFFFFFF, alpha));
+            return;
+        }
         if (!move.id().equals("time_stop")) return;
         int duration = ActionCatalog.world() ? 30 : 40;
         float ratio = snapshot.charge() > 0 ? Math.clamp((duration - snapshot.charge() + partialTick) / duration, 0F, 1F) : 0;
@@ -259,6 +346,20 @@ public final class ActionHud {
             OriginalHudDraw.blit(g, OVERLAY_LOCATION, x + (15 - size) / 2, y + (15 - size) / 2,
                     88, 0, size, size, 15, 15, 256, OriginalHudDraw.color(0xFFFFFF, alpha));
         }
+    }
+
+    /** Original hold-to-fire crosshair fill shared by vampire and zombie held charges. */
+    private static void renderVampireCrosshair(GuiGraphicsExtractor g, float partialTick) {
+        var client = Minecraft.getInstance();
+        if (!client.options.getCameraType().isFirstPerson()) return;
+        String id = PillarmanClient.isMode() ? PillarmanClient.chargeDuration(PillarmanClient.heldAction()) > 0 ? PillarmanClient.heldAction() : "" : ZombieClient.isMode() ? ZombieClient.chargeTicks("zombie_disguise") > 0 ? "zombie_disguise" : "" : java.util.stream.Stream.of("vampirism_blood_gift", "vampirism_space_ripper_stingy_eyes", "vampirism_hamon_suicide")
+                .filter(action -> VampireClient.chargeTicks(action) > 0).findFirst().orElse("");
+        if (id.isEmpty()) return;
+        float ratio = PillarmanClient.isMode() ? Math.clamp((PillarmanClient.chargeTicks(id) + partialTick) / PillarmanClient.chargeDuration(id), 0, 1) : ZombieClient.isMode() ? Math.clamp((ZombieClient.chargeTicks(id) + partialTick) / ZombieClient.chargeDuration(id), 0, 1)
+                : Math.clamp((VampireClient.chargeTicks(id) + partialTick) / VampireClient.chargeDuration(id), 0, 1);
+        float height = ratio == 1 ? 15 : 3 + 9 * ratio;
+        OriginalHudDraw.blit(g, OVERLAY_LOCATION, (g.guiWidth() - 15) / 2F, (g.guiHeight() - 15) / 2F + 15 - height,
+                88, 30 - height, 15, height, 256, 0xFFFFFFFF);
     }
 
     private static void renderArrowFeedback(GuiGraphicsExtractor g) {

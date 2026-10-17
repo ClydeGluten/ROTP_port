@@ -1,0 +1,6 @@
+{
+  "sources": [
+    {"type": "minecraft:single", "resource": "jojo:entity/stand/magicians_red_fire_0"},
+    {"type": "minecraft:single", "resource": "jojo:entity/stand/magicians_red_fire_1"}
+  ]
+}

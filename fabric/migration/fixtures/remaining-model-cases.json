@@ -1,0 +1,11 @@
+{
+  "models": {
+    "hierophant_green": {"parts": 23, "cubes": 30, "meshes": 0, "mirrors": 5, "limbs": 4, "root_position": [0, 24, 0], "head_position": [0, -24, 0], "head_cube": {"uv": [0, 0], "origin": [-4, -8, -4], "size": [8, 8, 8]}, "part": {"name": "bone7", "parent": "torso", "rotation": [0, 0, -0.5236]}},
+    "silver_chariot": {"parts": 22, "cubes": 50, "meshes": 0, "mirrors": 6, "limbs": 4, "root_position": [0, 24, 0], "head_position": [0, -24, 0], "head_cube": {"uv": [26, 22], "origin": [-4, -5.1, -4], "size": [8, 3, 3]}},
+    "magicians_red": {"parts": 30, "cubes": 42, "meshes": 0, "mirrors": 9, "limbs": 4, "root_position": [0, 24, 0], "head_position": [0, -24, 0], "head_cube": {"uv": [0, 0], "origin": [-3.5, -7, -4], "size": [7, 7, 8]}, "part": {"name": "headRight_r1", "parent": "head", "rotation": [0, 0.0478, 0]}},
+    "crazy_diamond": {"parts": 63, "cubes": 117, "meshes": 0, "mirrors": 9, "limbs": 4, "root_position": [0, 0, 0], "head_position": [0, 0, 0], "head_cube": {"uv": [0, 0], "origin": [-4, -8, -4], "size": [8, 8, 8]}},
+    "gold_experience": {"parts": 52, "cubes": 80, "meshes": 2, "mirrors": 34, "limbs": 0, "mesh_faces": 38, "root_position": [0, 24, 0], "head_position": [0, -24, 0], "head_cube": {"uv": [0, 0], "origin": [-4, -8, -4], "size": [8, 8, 8]}, "part": {"name": "rightArm", "parent": "rightArmXRot", "position": [0, 0, 0]}, "head_north_uv": [8, 8, 16, 16]}
+  },
+  "animation": {"clips": 16, "idle_length": 8, "idle_right_arm_first": [1.22652, -31.70199, 12.47708], "barrage_event": {"time": 0, "property": "barrage", "value": "TWO_HANDED"}},
+  "reject": ["empty_ge_java", "unknown_java_statement", "unknown_bb_element", "rescaled_bb_cube", "unknown_animation_bone", "unknown_animation_channel", "unknown_animation_expression"]
+}

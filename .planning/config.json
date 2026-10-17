@@ -10,6 +10,7 @@
     "research": false,
     "plan_check": true,
     "verifier": true,
-    "compact_content": true
+    "compact_content": true,
+    "use_worktrees": false
   }
 }

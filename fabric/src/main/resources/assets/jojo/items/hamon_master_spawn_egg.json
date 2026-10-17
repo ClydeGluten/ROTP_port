@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "jojo:item/template_spawn_egg",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 11513775
+      },
+      {
+        "type": "minecraft:constant",
+        "value": 15258551
+      }
+    ]
+  }
+}

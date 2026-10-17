@@ -2,7 +2,7 @@
 
 Target: Minecraft 26.3, Fabric Loader 0.19.5, Fabric API 0.162.0+26.3, Java 25. Upstream baseline: Ripples of the Past 0.2.2.2 at `72862a5826ed45d1dc26e90b37853097acda35de`.
 
-**Draft 9 corrects the HUD and camera rejected during the Draft 8 playtest.** The supported Stand HUD now uses original methods/assets and default placement; third person uses independent orbit instead of target-distance-dependent shoulder convergence. Star Platinum and The World remain the playable pool. This is not full original-mod parity. Draft 9.1 fixed the world-entry crash; Draft 9.2 fixes the subsequent mob hit-reaction report. User accepted Draft 9.2. Draft 10 extends original Time Stop combat and instant-time behavior; 76 core tests, 124 server GameTests, 29 model checks and all nine client suites passed. User accepted Draft 10. Draft 11 knives are verified and packaged: 76 core tests, 146 server GameTests, 29 model checks and all ten client suites passed. Its manual playtest remains pending.
+**Draft 16.1 fixes the liquid-walking crash by restoring the original fluid-displacement method.** Draft 16 previously corrected 14 source-confirmed Hamon gaps after Draft 15 introduced the registered progression and ability system. Star Platinum and The World remain the playable Stand pool. Freeze, Space Ripper Stingy Eyes, zombies, Evil Atmosphere, leaps, curing/coffins, vampire Stand modifiers, masks, blood effects, original configuration and vampire-facing Hamon interactions are implemented. Natural Hamon learning, training, all five techniques, skills/actions, equipment, temple acquisition and presentation are implemented. Pillar Man evolution and separate zombie-player powers remain separate dependencies. This is not full original-mod parity.
 
 | System | Status | Current scope |
 | --- | --- | --- |
@@ -23,8 +23,62 @@ Target: Minecraft 26.3, Fabric Loader 0.19.5, Fabric API 0.162.0+26.3, Java 25. 
 | The World specials | Playable | Kick, manual control, human Time Stop, target-relative Quick move and Time Stop Punch with backshot/recovery cancellation |
 | Time Stop simulation | Partial | Regional entity/client freeze, frozen-player guards, paused random/block-entity ticks, retained scheduled block/fluid ticks |
 | Knives | Draft 11 | Original item, recipe, stack models, projectile, The World volley, stopped-time flight and stuck-player visuals; see KNIFE_PARITY.md |
-| Other content | Pending | Remaining Stands, Hamon/vampirism, most items/blocks/recipes/world generation |
+| Vampirism | Draft 13 expanded scope | Original actions, zombies, lifecycle/coffins, Stand bonuses, blood/visuals/configuration and vampire-facing Hamon integration; see VAMPIRISM_PARITY.md |
+| Hamon | Draft 16.1 | Original learning, training, 46 skill definitions, five techniques, 31 actions, passives, UI, equipment, inheritance and temple; manual acceptance pending |
+| Other content | Pending | Remaining Stands, Pillar Man and zombie player powers, other items/blocks/recipes/world generation |
 | Migration/compatibility | Pending | Forge-save import, addon compatibility and external-mod compatibility matrix |
+
+## Draft 16.1 liquid-walking crash correction
+
+Removed the recursive vanilla fluid predicate and adapted the original four-corner fluid movement hook. This fixes both the crash and missing surface support while retaining original fluid heights, step allowance, energy costs and lava damage. See [cause, source mapping and regression evidence](HAMON_LIQUID_WALKING_FIX.md). Existing draft saves require no reset.
+
+`/tmp/rotp-draft16-1-verification2.log`: **BUILD SUCCESSFUL in 56s**, **206 required server GameTests passed**, and the focused Hamon client flow passed in fresh integrated and dedicated worlds. The unchanged **94 core tests** remained up to date; packaging passed **29 model checks**.
+
+Latest bundle `0.2.2-fabric.16.1-dev+upstream.0.2.2.2`; mod SHA-256 `25658c302906c362669b6670f41f72a3d42c5574d838961241792a318e6981fe`. Package hashes and launcher dry-run pass. Original source and pre-fix user-save metadata are unchanged. Manual playtest pending; staged locally, not committed/pushed.
+
+## Draft 16 Hamon source corrections
+
+The original-source audit restored damage/contact hooks, rollover and cached training bonuses, skill-window navigation/scrolling, handed kick selection, infusion eligibility/costs, Life Magnetism hand requirements, glider landing immunity and Molotov client eligibility. See [method comparison and audit provenance](HAMON_SOURCE_REVIEW.md) and [playtest guide](HAMON_PLAYTEST.md). All 14 accepted findings have corrections; rejected suggestions and unported cross-content dependencies remain explicit.
+
+`/tmp/rotp-draft16-verification3.log`, **BUILD SUCCESSFUL in 1m 1s**. All **205 required server GameTests** and **94 core tests** passed. The focused `HamonClientGameTest` passed in fresh integrated and dedicated worlds; packaging passed **29 model checks**. No unrelated client matrix was repeated.
+
+Previous bundle `0.2.2-fabric.16-dev+upstream.0.2.2.2` remains preserved; mod SHA-256 `6e7de829462ebcf9e43decb31437840a70408790ccd9e9853f5d4ddd936e301b`. Independent scoped verification found no blockers. Description-scroll and technique screenshots were inspected; visual/gameplay acceptance remains pending. Original `src/` matches HEAD; bundle hashes and launcher dry-run pass. Changes are staged locally, with no new commit or push.
+
+## Draft 15 Hamon
+
+All registered original Hamon progression, five techniques, 31 actions/passives and supporting equipment/world/UI scope are implemented. See [playtest guide](HAMON_PLAYTEST.md) and the progression/action/client/content Hamon parity ledgers. Dormant source definitions stay dormant; other unported Stand/power integrations remain explicit dependencies.
+
+`/tmp/rotp-draft15-verification8.log`, **BUILD SUCCESSFUL in 53s**. All **197 required server GameTests** passed. The focused Hamon client flow passed in fresh integrated and dedicated worlds. All **91 core tests** pass (unchanged tasks reused); packaging passed **29 model checks**. No unrelated client matrix was repeated.
+
+Previous bundle `0.2.2-fabric.15-dev+upstream.0.2.2.2` remains preserved; mod SHA-256 `f2e40a0d94f4e6846db5cc9624d51a3ab2be534718e901ea65ee19314b56a5e2`. Screenshots inspected; manual playtest pending. Staged locally, not newly committed/pushed. Original source and user saves unchanged.
+
+## Draft 14 vampire parity follow-up
+
+Weak vampires now leap through actual input using their original reduced strength. Stun/Freeze enforce original applicability, stunned creepers reset their fuse, coffin sleep awards its original daytime-to-night advancement, silent cure sounds remain silent, and eye beams restore original culling/lighting/face methods. See [source ledger](VAMPIRISM_PARITY.md).
+
+`/tmp/rotp-draft14-verification5.log`, **BUILD SUCCESSFUL in 1m 25s**. All **175 required server GameTests** passed, alongside the focused vampire client suite in fresh singleplayer and dedicated-server worlds. Existing 80 core checks remained up to date; packaging passed 29 model checks. No unrelated client suites were run.
+
+Previous bundle `0.2.2-fabric.14-dev+upstream.0.2.2.2` remains preserved; mod SHA-256 `36ce76be72276520456f6cd3857461f170c385078829773bb69c0c38b2d62e74`. Staged locally; no new commit or push. Manual lifecycle/cosmetic testing remains pending. The inspected front-view beam capture is partly obscured by the target cow.
+
+## Draft 13 remaining vampire scope
+
+Advanced actions, zombies, curing/coffins, masks/Aja acquisition, vampire Stand bonuses, blood/visuals/configuration and vampire-facing Hamon are implemented. Hamon is added in Draft 15. Pillar Man evolution and separate zombie-player powers remain separate work. See [vampire source ledger](VAMPIRISM_PARITY.md) and [supporting systems](VAMPIRE_SUPPORT_PARITY.md).
+
+Final command: `JAVA_HOME=/home/alanno/.local/share/rotp-toolchains/jdk-25.0.4.1+1 ./fabric/gradlew -p fabric build runClientGameTest -PclientGameTest=VampireClientGameTest -PacceptMinecraftEula=true --console=plain`.
+
+Evidence: `/tmp/rotp-draft13-verification2.log`, **BUILD SUCCESSFUL in 1m 17s**. Passed **80 core tests, 173 required server GameTests, 29 model checks and the focused vampire client suite in singleplayer and a dedicated connection**. The previous twelve-suite client matrix was not repeated. Existing coverage was extended without a new test suite. A model/blockstate dependency scan validated 106 models. The first client run caught missing tracked mob effects; original packet hooks fixed this. Screenshots confirm frozen target/HUD and beam rendering. Some front-view screenshots are occluded by the test cow and do not prove cosmetic fidelity. Manual testing remains pending, especially curing/respawn, zombie AI and the complete cosmetic sequence.
+
+Package checksums and launcher dry run pass. Original Forge sources and user saves under `fabric/run` remain untouched. Test worlds use `fabric/build/run`.
+
+Previous bundle `0.2.2-fabric.13-dev+upstream.0.2.2.2` remains preserved; mod SHA-256 `3b50ff1c2f8fb2cde7afa9700ebbc22379e14ff539efe1012892f3f08865fbc2`. Staged locally, not committed or pushed.
+
+## Draft 12 playtest fixes and vampirism
+
+The user accepted the rest of Draft 11 and requested fixes from `/home/alanno/notes`, then vampirism and starter abilities. Draft 12 restores pitched melee manifestation offsets and adapts the original legacy limb-aim layer to the migrated poses. Knives retain original input priority, with in-game acquisition/throw guidance and rebound-key prompts. See [playtest corrections](PLAYTEST_NOTES_DRAFT12.md).
+
+Vampirism adds the original Stone Mask acquisition (8% jungle-temple roll, worn mask plus single knife) and Blood Gift route. Mask vampires are full-power; Blood Gift recipients are weak until upgraded by a mask. Blood Drain, Claw Lacerate and Blood Gift use original timing/cost rules, with separate synchronized blood, original passive tiers and sunlight weakness. The original non-Stand bar/actions share the existing editor and controls. See [source mapping, playtest and remaining scope](VAMPIRISM_PARITY.md).
+
+Draft 12 passed **80 core tests, 173 required server GameTests, 29 model checks and all twelve real-client suites**. Combined evidence: `/tmp/rotp-draft12-verification2.log`, **BUILD SUCCESSFUL in 4m 26s**, preserved in the bundle. New checks cover sixteen vertical-aim scenarios, actual mask/knife use and rendering, blood HUD/help, Drain and cancellation, physical Claw knockback, interrupted/completed Blood Gift, weak/full death behavior, milk, sunlight and block protections. Existing controls/camera/HUD/progression/knives/time-action checks remain green. The first combined run exposed shared daylight in fresh test shelters; a separate night test environment fixes fixture isolation while retaining the real sunlight test. Final screenshots were inspected. Packaging, checksums and launcher dry run pass; manual playtest is pending.
 
 ## Draft 11 knives
 
@@ -80,7 +134,7 @@ Camera behavior was independently implemented from Better Third Person's adverti
 
 **The World.** The original model has 59 parts/68 cubes, eight clips and interpolated head-look expressions including the kick spin. Heavy armor piercing uses `power * 0.015`; Kick sweeps adjacent visible targets for half damage. Resolve gates are Kick 1, Time Stop/Time Skip 2 and Time Stop Punch 3. Time Skip costs 180 plus scaled travel. Time Stop Punch costs 140 plus scaled implied time, moves only the Stand, has five-tick windup and a 50-tick ability cooldown. Full-body travel checks precede movement/resource commitment. Draft 10 restores target-relative/ground placement, aggro reset, implied clocks, backshot, the specific deferred heavy sound and independent cooldowns. Draft 11 adds knives; vampire behavior remains open.
 
-**Resolve.** Original default thresholds, attack/health boosts and ten best combat records are implemented. Accepted Stand damage earns full raw points; eligible player attacks while summoned earn half. Passive animals, self-hits and rejected hits give none. Decay starts after 400 ticks, counted twice as fast while dismissed, then removes two points per tick. Expiration records a peak even when the two-tick countdown reaches zero, fixing an upstream edge case. Levels/training persist per Stand; death resets combat Resolve and preserves its peak. Resistance applies after absorption except void damage; vanilla combat-stat accounting still records pre-Resolve damage. Effect shader/particles, souls, configurable progression, extra max-level counters, other-power multipliers and cosmetic chat/remote boosts remain pending. Hamon training is not included.
+**Resolve.** Original default thresholds, attack/health boosts and ten best combat records are implemented. Accepted Stand damage earns full raw points; eligible player attacks while summoned earn half. Passive animals, self-hits and rejected hits give none. Decay starts after 400 ticks, counted twice as fast while dismissed, then removes two points per tick. Expiration records a peak even when the two-tick countdown reaches zero, fixing an upstream edge case. Levels/training persist per Stand; death resets combat Resolve and preserves its peak. Resistance applies after absorption except void damage; vanilla combat-stat accounting still records pre-Resolve damage. Effect shader/particles, souls, configurable progression, extra max-level counters, other-power multipliers and cosmetic chat/remote boosts remain pending. Hamon training is handled by its separate Draft 15 progression system.
 
 **Time Stop.** Human duration starts at five ticks and caps at 100. Star Platinum charges for 40 ticks and trains at 0.25 points per actual stopped tick; The World charges for 30 and trains at 0.1. Resolve quadruples training. Cost is 225 upfront plus `900 / durationTicks` per active tick. Survival cooldown is three times elapsed ticks, reduced during Resolve; charge cancellation retains a 20-tick safety cooldown. Creative bypasses costs, learned duration and active-stop cooldown without awarding earned levels. Separate per-Stand learning persists through replacement/reload.
 
@@ -110,6 +164,4 @@ The user's EULA acceptance applies to this local test server. Reports/screenshot
 
 ## After the playtest
 
-The user accepted the corrected presentation and reported combat hit reactions. Wait for the Draft 9.2 combat playtest before starting another content milestone. Remaining work includes combat/animation parity, Star Platinum blink, additional UI settings, acquisition materials/projectiles, crash-safe allocation recovery, more Stands and non-Stand powers. Forge-save migration and addon compatibility need stable schemas/registries first. GSD tracks plans and acceptance under `.planning/`.
-
-Draft 9.2 mod SHA-256: `9cfb11dd71c73e6b662a09d1bae415ef98770b4641109f3f585dfcdea3d97f4f`. `rotptest --dry-run` passes; source changes are staged. `fabric/build/run` is an ordinary directory with final evidence, and user worlds under `fabric/run` were not modified.
+Draft 16.1 liquid-walking correction is packaged and awaiting user playtest. Remaining work includes other Stands, Pillar Man evolution, zombie-player power, broader combat/animation parity, additional shared UI settings, acquisition/world content and crash-safe allocation recovery. Forge-save migration and addon compatibility need stable schemas/registries first. GSD tracks plans and acceptance under `.planning/`.

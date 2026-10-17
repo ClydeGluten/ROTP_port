@@ -33,7 +33,7 @@ The current renderer uses render states and submitted geometry instead of immedi
 
 ## Remaining dependencies and limits
 
-The original single-knife Stone Mask interaction requires the unported Stone Mask/vampirism system. Item tracking used by other unported content is not implemented. Broader voice-line arbitration/configuration, Stand projectile interception/deflection, Time Stop immunity/perception and other combat systems retain the project's previously documented gaps. Hamon remains a later milestone. Forge saves are not imported.
+Draft 12 restores the original single-knife Stone Mask activation: one self-damage, reusable knife and no throw cooldown. See VAMPIRISM_PARITY.md. Item tracking used by other unported content is not implemented. Broader voice-line arbitration/configuration, Stand projectile interception/deflection, Time Stop immunity/perception and other combat systems retain the project's previously documented gaps. Hamon remains a later milestone. Forge saves are not imported.
 
 ## Verification
 

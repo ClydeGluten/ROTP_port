@@ -1,0 +1,193 @@
+{
+  "format": 1,
+  "source_commit": "72862a5826ed45d1dc26e90b37853097acda35de",
+  "geometry": {
+    "body_bones": 23,
+    "body_cuboids": 30,
+    "emerald_cuboids": 3,
+    "string_segment_cuboids": 1
+  },
+  "animation": "Original Java legacy poses; no HG animation JSON exists",
+  "resources": [
+    {
+      "source": "src/main/resources/assets/jojo/sounds/stand/hierophant_green_barrier_ripped.ogg",
+      "resource": "assets/jojo/sounds/stand/hierophant_green_barrier_ripped.ogg",
+      "sha256": "f1ed0a085ebee929a0d9fd4554978c0820dfa6b7880f1b2463a330c9806f47b3"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/sounds/stand/hierophant_green_emerald_splash.ogg",
+      "resource": "assets/jojo/sounds/stand/hierophant_green_emerald_splash.ogg",
+      "sha256": "07a0a2a7491a5ffb098fe191a9c86821455a56d081d80d4241f9690bdc309c47"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/sounds/stand/hierophant_green_emerald_splash_2.ogg",
+      "resource": "assets/jojo/sounds/stand/hierophant_green_emerald_splash_2.ogg",
+      "sha256": "3b2f73844c7fea25cb7298bcd6df8041a8e054d4bcfc7640d3498365dc1efd5d"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/sounds/stand/hierophant_green_emerald_splash_3.ogg",
+      "resource": "assets/jojo/sounds/stand/hierophant_green_emerald_splash_3.ogg",
+      "sha256": "b8b28629ab5147f59a0abd1076d6db45bd1d83b69d14f9f736a9ef2d81dff44e"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/sounds/stand/hierophant_green_summon.ogg",
+      "resource": "assets/jojo/sounds/stand/hierophant_green_summon.ogg",
+      "sha256": "1129b8b4cc7a86f788eca1ad9a5424e0bb67ca5331548524fd4f85bfc7e7dbb5"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/sounds/stand/hierophant_green_summon_2.ogg",
+      "resource": "assets/jojo/sounds/stand/hierophant_green_summon_2.ogg",
+      "sha256": "103dadcde1ed9ab47f0f6ef36e195529673fc3c6f04b74441518b5bfe4da5dda"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/sounds/stand/hierophant_green_tentacles.ogg",
+      "resource": "assets/jojo/sounds/stand/hierophant_green_tentacles.ogg",
+      "sha256": "40d39fe04819d3c0696ce942b6f5cf36e194c7d200d25548b34b6e47c5ba9eff"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/sounds/stand_user/kakyoin_hierophant.ogg",
+      "resource": "assets/jojo/sounds/stand_user/kakyoin_hierophant.ogg",
+      "sha256": "b21cd00a18cbdac7916fbada2f675340cc78f11f020e70b9481926657a8f0b93"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/sounds/stand_user/kakyoin_hierophant_green.ogg",
+      "resource": "assets/jojo/sounds/stand_user/kakyoin_hierophant_green.ogg",
+      "sha256": "97ff706905d9e9ead2c44b40e881fe69a3a535e953276dcaddf8c8ba25613e33"
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/hierophant_green_attack.png",
+      "resource": "assets/jojo/textures/action/hierophant_green_attack.png",
+      "sha256": "edaf19d9a36cb1c118fc1cb82fa361a9d92a1745952dbefcc03d728da5f771e6",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/hierophant_green_attack_binding.png",
+      "resource": "assets/jojo/textures/action/hierophant_green_attack_binding.png",
+      "sha256": "b41579d36a2a501742973ead4f7d017ced026fd1c343ae342409a1022eac1cd7",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/hierophant_green_barrier.png",
+      "resource": "assets/jojo/textures/action/hierophant_green_barrier.png",
+      "sha256": "635afa2a416bc6e1fc3239c41592d5a1a45843c001c937059e230046f323c902",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/hierophant_green_block.png",
+      "resource": "assets/jojo/textures/action/hierophant_green_block.png",
+      "sha256": "4640e50cb48bdd9a66fe623704769d0de08b8877f7b8ed405d8d0eccbdeed374",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/hierophant_green_emerald_splash.png",
+      "resource": "assets/jojo/textures/action/hierophant_green_emerald_splash.png",
+      "sha256": "a42ebf4efc28948e0291c66047e5d580be7a6de76fd2786ff29093929b5f4af1",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/hierophant_green_es_concentrated.png",
+      "resource": "assets/jojo/textures/action/hierophant_green_es_concentrated.png",
+      "sha256": "180f3552c23458d3d75b975c508e29d3eef165d49b71074a3b56f5b85b1b8b76",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/hierophant_green_grapple.png",
+      "resource": "assets/jojo/textures/action/hierophant_green_grapple.png",
+      "sha256": "db3cb8609fcff496001c619e52d6b9b1703d0438bc6e075c3ec2a6cf5f2ada42",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/action/hierophant_green_grapple_entity.png",
+      "resource": "assets/jojo/textures/action/hierophant_green_grapple_entity.png",
+      "sha256": "2a38bbebb66679bd7c8fa61957bdba2f901f34d1f80ec325af2ba62eb93d6b94",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/entity/projectiles/hg_emerald.png",
+      "resource": "assets/jojo/textures/entity/projectiles/hg_emerald.png",
+      "sha256": "312afd8f7354c5534786c5137ad323bd90bb1444a1d03201b9de57fb3355f6ab",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/entity/projectiles/hg_string.png",
+      "resource": "assets/jojo/textures/entity/projectiles/hg_string.png",
+      "sha256": "b4bb6e39473a8b42bc22221d20a861fed33c2b37cc7353ca9c34cc2352fcc96c",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/entity/projectiles/hg_string_glow.png",
+      "resource": "assets/jojo/textures/entity/projectiles/hg_string_glow.png",
+      "sha256": "cedea8162c954eb68f54ec00fa0b8a8d10df3e3b749fa92eda98b951dade4838",
+      "size": [
+        128,
+        128
+      ]
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/entity/stand/glow/hierophant_green.png",
+      "resource": "assets/jojo/textures/entity/stand/glow/hierophant_green.png",
+      "sha256": "60a3a31036087a1b26478ec5406eac92f4a650baea69b083639acfb1e148024d",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/entity/stand/hierophant_green.png",
+      "resource": "assets/jojo/textures/entity/stand/hierophant_green.png",
+      "sha256": "bead14f1fc3ca73290bb41c01380fe038cd73374da67d3ca4078f148c4848b71",
+      "size": [
+        256,
+        256
+      ]
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/gui/additional.png",
+      "resource": "assets/jojo/textures/gui/additional.png",
+      "sha256": "85a5ffba34022b29327fde23ee6283a3e97ae240b5df1cfe776cdbe665906f90",
+      "size": [
+        256,
+        256
+      ]
+    },
+    {
+      "source": "src/main/resources/assets/jojo/textures/power/hierophant_green.png",
+      "resource": "assets/jojo/textures/power/hierophant_green.png",
+      "sha256": "c83c60c9858f253d5441d22e6a702aafee1e6c0aaa539d2ec76c48cbb5e826a7",
+      "size": [
+        32,
+        32
+      ]
+    }
+  ]
+}

@@ -11,6 +11,7 @@ import java.nio.file.StandardCopyOption;
 /** One-time migration of Draft 8 defaults; deliberately rebound keys retain their user's values. */
 public final class OriginalControlsMigration {
     public static void apply(Minecraft client) {
+        migrateProgressionKey(client);
         var marker = FabricLoader.getInstance().getConfigDir().resolve("jojo/original-controls-v1");
         // Draft 9 wrote GLFW's -1 sentinel, but 26.3 polls SDL scancodes and uses UNKNOWN (0).
         // Repair even when the original layout/key migration has already completed.
@@ -31,6 +32,22 @@ public final class OriginalControlsMigration {
             Files.writeString(marker, "Original ROTP HUD defaults applied; existing custom bindings retained.\n");
         } catch (java.io.IOException exception) {
             LogUtils.getLogger().warn("Could not migrate original Stand controls", exception);
+        }
+    }
+
+    private static void migrateProgressionKey(Minecraft client) {
+        try {
+            var path = client.options.getFile().toPath();
+            if (!Files.exists(path)) return;
+            var lines = Files.readAllLines(path);
+            if (lines.stream().anyMatch(line -> line.startsWith("key_jojo.key.hamon_skills_window:"))) return;
+            for (String line : lines) if (line.startsWith("key_key.jojo.fabric.progress:")) {
+                var key = KeyMapping.get("jojo.key.hamon_skills_window");
+                if (key != null) key.setKey(InputConstants.getKey(line.substring("key_key.jojo.fabric.progress:".length())));
+                KeyMapping.resetMapping(); return;
+            }
+        } catch (java.io.IOException | IllegalArgumentException error) {
+            LogUtils.getLogger().warn("Could not retain the legacy progression key binding", error);
         }
     }
 

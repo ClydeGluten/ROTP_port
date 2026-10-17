@@ -6,6 +6,8 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
+import java.util.Optional;
 
 /** Clients send intent only; ownership, range, damage, stamina and cooldowns are resolved server-side. */
 public record StandActionPayload(Action action) implements CustomPacketPayload {
@@ -21,33 +23,33 @@ public record StandActionPayload(Action action) implements CustomPacketPayload {
 
     @Override public Type<StandActionPayload> type() { return TYPE; }
 
-    public static void initialize() {
-        PayloadTypeRegistry.serverboundPlay().register(TYPE, CODEC);
-        ServerPlayNetworking.registerGlobalReceiver(TYPE, (payload, context) -> {
-            switch (payload.action) {
-                case TOGGLE -> StandService.toggle(context.player());
-                case LIGHT_PUNCH -> StandService.attack(context.player(), false);
-                case HEAVY_PUNCH -> StandService.attack(context.player(), true);
-                case START_BARRAGE -> StandService.startHeld(context.player(), false);
-                case START_GUARD -> StandService.startHeld(context.player(), true);
-                case STOP_HELD -> StandService.stopHeld(context.player());
-                case KEEP_HELD -> StandService.refreshHeld(context.player());
-                case UPPERCUT -> StandService.uppercut(context.player());
-                case STAR_FINGER -> StandService.special(context.player(), StarPlatinumEntity.PHASE_FINGER);
-                case START_INHALE -> StandService.special(context.player(), StarPlatinumEntity.PHASE_INHALE);
-                case START_ZOOM -> StandService.special(context.player(), StarPlatinumEntity.PHASE_ZOOM);
-                case START_CONTROL -> StandService.startControl(context.player());
-                case STOP_CONTROL -> StandService.stopControl(context.player());
-                case TIME_STOP -> {
-                    StandService.stopControl(context.player());
-                    if (!TimeStopService.toggle(context.player()) && (!context.player().getAttachedOrCreate(StandAttachments.PROGRESS).hasStand()
-                            || ProgressionService.unlocked(context.player(), context.player().getAttachedOrCreate(StandAttachments.PROGRESS).timeStopUnlock()))) context.player().sendOverlayMessage(net.minecraft.network.chat.Component.translatable(
-                            "jojo.fabric.time_unavailable", TimeStopService.cooldownRemaining(context.player()) / 20F));
-                }
-                case BLINK -> TheWorldActions.blink(context.player());
-                case TIME_PUNCH -> TheWorldActions.timePunch(context.player());
-                case CANCEL_TIME_CHARGE -> TimeStopService.cancelCharge(context.player());
-            }
+    /** Separate channel leaves every legacy enum byte unchanged. No target, damage or training fields exist. */
+    public record Registered(Identifier action,StandActionRegistry.Phase phase,boolean shift,StandActionRegistry.Extra extra) implements CustomPacketPayload {
+        public static final Type<Registered> TYPE=new Type<>(RipplesFabric.id("registered_stand_action"));
+        public static final StreamCodec<RegistryFriendlyByteBuf,Registered> CODEC=StreamCodec.of((buffer,payload)->{
+            buffer.writeByte(2);buffer.writeUtf(payload.action.toString(),256);buffer.writeByte(payload.phase.ordinal());buffer.writeBoolean(payload.shift);
+            var extra=payload.extra;int flags=(extra.selection().isPresent()?1:0)|(extra.item().isPresent()?2:0)|(extra.recoveryModifier()?4:0)|(extra.subtype().isPresent()?8:0);
+            buffer.writeByte(flags);extra.selection().ifPresent(id->buffer.writeUtf(id.toString(),256));extra.item().ifPresent(buffer::writeUUID);extra.subtype().ifPresent(value->buffer.writeUtf(value,64));
+        },buffer->{
+            int version=buffer.readUnsignedByte();if(version!=1&&version!=2)throw new DecoderException("Unsupported Stand action payload version");
+            Identifier action=Identifier.tryParse(buffer.readUtf(256));int phase=buffer.readUnsignedByte();boolean shift=buffer.readBoolean();int flags=buffer.readUnsignedByte();
+            if(action==null||phase>=StandActionRegistry.Phase.values().length||(flags&~(version==1?7:15))!=0)throw new DecoderException("Invalid Stand action intent");
+            Identifier selection=(flags&1)!=0?Identifier.tryParse(buffer.readUtf(256)):null;
+            if((flags&1)!=0&&selection==null)throw new DecoderException("Invalid Stand action selection");
+            var item=(flags&2)!=0?Optional.of(buffer.readUUID()):Optional.<java.util.UUID>empty();
+            var subtype=(flags&8)!=0?Optional.of(buffer.readUtf(64)):Optional.<String>empty();
+            if(subtype.isPresent()&&(selection==null||!subtype.get().matches("[a-z0-9_./-]{1,64}")))throw new DecoderException("Invalid Stand action subtype");
+            return new Registered(action,StandActionRegistry.Phase.values()[phase],shift,new StandActionRegistry.Extra(Optional.ofNullable(selection),item,(flags&4)!=0,subtype));
         });
+        public Registered {java.util.Objects.requireNonNull(action);java.util.Objects.requireNonNull(phase);java.util.Objects.requireNonNull(extra);if(action.toString().length()>256)throw new IllegalArgumentException("Action identifier too long");}
+        @Override public Type<Registered> type(){return TYPE;}
+    }
+
+    public static void initialize() {
+        StandActionRegistry.initialize();
+        PayloadTypeRegistry.serverboundPlay().register(TYPE, CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(TYPE,(payload,context)->StandActionRegistry.dispatchLegacy(context.player(),payload.action));
+        PayloadTypeRegistry.serverboundPlay().register(Registered.TYPE,Registered.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(Registered.TYPE,(payload,context)->StandActionRegistry.dispatch(context.player(),payload.action,payload.phase,payload.shift,payload.extra));
     }
 }

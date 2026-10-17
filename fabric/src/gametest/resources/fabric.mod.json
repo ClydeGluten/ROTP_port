@@ -21,7 +21,35 @@
       "com.github.standobyte.jojo.fabric.TimePunchGameTests",
       "com.github.standobyte.jojo.fabric.DisconnectGameTests",
       "com.github.standobyte.jojo.fabric.KnifeGameTests",
-      "com.github.standobyte.jojo.fabric.KnifeItemGameTests"
+      "com.github.standobyte.jojo.fabric.KnifeItemGameTests",
+      "com.github.standobyte.jojo.fabric.StoneMaskLootGameTests",
+      "com.github.standobyte.jojo.fabric.StandAimGameTests",
+      "com.github.standobyte.jojo.fabric.VampireGameTests",
+      "com.github.standobyte.jojo.fabric.VampireBlockGameTests",
+      "com.github.standobyte.jojo.fabric.HamonGameTests",
+      "com.github.standobyte.jojo.fabric.HamonContentGameTests",
+      "com.github.standobyte.jojo.fabric.HamonGlovesGameTests",
+      "com.github.standobyte.jojo.fabric.HamonLifecycleGameTests",
+      "com.github.standobyte.jojo.fabric.HamonProgressionParityGameTests",
+      "com.github.standobyte.jojo.fabric.StandDefinitionsGameTests",
+      "com.github.standobyte.jojo.fabric.ZombieGameTests",
+      "com.github.standobyte.jojo.fabric.PillarmanStateGameTests",
+      "com.github.standobyte.jojo.fabric.SpeciesGameTests",
+      "com.github.standobyte.jojo.fabric.PillarBodyPartGameTests",
+      "com.github.standobyte.jojo.fabric.EquipmentGameTests",
+      "com.github.standobyte.jojo.fabric.PossessionGameTests",
+      "com.github.standobyte.jojo.fabric.PillarWindGameTests",
+      "com.github.standobyte.jojo.fabric.PillarHeatGameTests",
+      "com.github.standobyte.jojo.fabric.PillarWorldGameTests",
+      "com.github.standobyte.jojo.fabric.StandActionsGameTests",
+      "com.github.standobyte.jojo.fabric.PillarLightGameTests",
+      "com.github.standobyte.jojo.fabric.PillarPresentationGameTests",
+      "com.github.standobyte.jojo.fabric.SilverChariotGameTests",
+      "com.github.standobyte.jojo.fabric.HierophantGreenGameTests",
+      "com.github.standobyte.jojo.fabric.BlockRestorationGameTests",
+      "com.github.standobyte.jojo.fabric.StandConfigGameTests",
+      "com.github.standobyte.jojo.fabric.StandTrackingGameTests",
+      "com.github.standobyte.jojo.fabric.MagiciansRedGameTests"
     ],
     "fabric-client-gametest": [
       "com.github.standobyte.jojo.fabric.ControlsClientGameTest",
@@ -33,7 +61,12 @@
       "com.github.standobyte.jojo.fabric.ActionHudClientGameTest",
       "com.github.standobyte.jojo.fabric.TimeActionsClientGameTest",
       "com.github.standobyte.jojo.fabric.TimeStopCombatClientGameTest",
-      "com.github.standobyte.jojo.fabric.KnifeClientGameTest"
+      "com.github.standobyte.jojo.fabric.KnifeClientGameTest",
+      "com.github.standobyte.jojo.fabric.StandAimClientGameTest",
+      "com.github.standobyte.jojo.fabric.VampireClientGameTest",
+      "com.github.standobyte.jojo.fabric.HamonClientGameTest",
+      "com.github.standobyte.jojo.fabric.RemainingContentClientGameTest",
+      "com.github.standobyte.jojo.fabric.StandExpansionClientGameTest"
     ]
   }
 }

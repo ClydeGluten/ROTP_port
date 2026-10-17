@@ -27,6 +27,8 @@ public final class TimeStopService {
     public static final int CHUNK_RANGE = 12;
     public static final int CHARGE_TICKS = 40;
     public static final int STOP_TICKS = 100;
+    /** Original high-lifeform maximum; STOP_TICKS remains the human cost baseline. */
+    public static final int MAX_STOP_TICKS = 180;
     public static final float STAMINA_UPFRONT = 225.0F;
     public static final float STAMINA_PER_TICK = 9.0F;
     public static final int MIN_CANCEL_COOLDOWN = 20;
@@ -171,13 +173,13 @@ public final class TimeStopService {
         if (AbilityCooldowns.remaining(player, 11) > 0) return false;
 
         StandProgress progress = player.getAttachedOrCreate(StandAttachments.PROGRESS);
-        if (!progress.hasStand()) return false;
+        if (!progress.canStopTime()) return false;
         if (!ProgressionService.require(player, progress.timeStopUnlock(), "key.jojo.fabric.time_stop")) return false;
 
         StarPlatinumEntity stand = StandService.current(player);
         if (stand == null || stand.isRemoved() || !stand.allowsStaminaRegen()) return false;
 
-        if (!player.isCreative() && progress.stamina() < STAMINA_UPFRONT) return false;
+        if (!StandConfig.staminaFree(player) && progress.stamina() < STAMINA_UPFRONT) return false;
 
         if (isAreaOverlapping(player.level(), player.chunkPosition())) return false;
 
@@ -259,7 +261,10 @@ public final class TimeStopService {
     }
 
     public static boolean isFrozen(Entity entity) {
+        if (entity instanceof com.github.standobyte.jojo.fabric.SpaceRipperStingyEyesEntity beam && beam.bound()) return isFrozen(beam.boundOwner());
+        if (entity instanceof com.github.standobyte.jojo.fabric.stand.OwnedBodyPartEntity part && part.bound() && part.livingOwner() != null) return isFrozen(part.livingOwner());
         if (entity == null || entity.isRemoved() || ACTIVE_STOPS.isEmpty()) return false;
+        if(entity instanceof net.minecraft.world.entity.monster.Enderman&&StandConfig.server().endermenBeyondTimeSpace())return false;
         Level level = entity.level();
         ResourceKey<Level> dimension = level.dimension();
         ChunkPos entityChunk = entity.chunkPosition();
@@ -283,7 +288,7 @@ public final class TimeStopService {
 
             int dx = Math.abs(entityChunk.x() - stop.activationChunk.x());
             int dz = Math.abs(entityChunk.z() - stop.activationChunk.z());
-            if (dx <= CHUNK_RANGE && dz <= CHUNK_RANGE) {
+            if (StandConfig.server().timeStopChunkRange()==0 || dx <= StandConfig.server().timeStopChunkRange() && dz <= StandConfig.server().timeStopChunkRange()) {
                 if (level.hasChunk(entityChunk.x(), entityChunk.z())) {
                     return !(entity instanceof KnifeEntity knife) || knife.getTimeStopFlightTicks() == 0;
                 }
@@ -299,7 +304,7 @@ public final class TimeStopService {
             if (!stop.dimension.equals(dimension)) continue;
             int dx = Math.abs(pos.x() - stop.activationChunk.x());
             int dz = Math.abs(pos.z() - stop.activationChunk.z());
-            if (dx <= CHUNK_RANGE && dz <= CHUNK_RANGE) {
+            if (StandConfig.server().timeStopChunkRange()==0 || dx <= StandConfig.server().timeStopChunkRange() && dz <= StandConfig.server().timeStopChunkRange()) {
                 return true;
             }
         }
@@ -309,13 +314,13 @@ public final class TimeStopService {
     public static boolean isAreaOverlapping(Level level, ChunkPos pos) {
         if (level == null || pos == null) return false;
         ResourceKey<Level> dimension = level.dimension();
-        int maxOverlapDistance = CHUNK_RANGE * 2;
+        long maxOverlapDistance = (long)StandConfig.server().timeStopChunkRange() * 2;
 
         for (ActiveTimeStop stop : ACTIVE_STOPS.values()) {
             if (!stop.dimension.equals(dimension)) continue;
             int dx = Math.abs(pos.x() - stop.activationChunk.x());
             int dz = Math.abs(pos.z() - stop.activationChunk.z());
-            if (dx <= maxOverlapDistance && dz <= maxOverlapDistance) {
+            if (maxOverlapDistance==0 || dx <= maxOverlapDistance && dz <= maxOverlapDistance) {
                 return true;
             }
         }
@@ -324,7 +329,7 @@ public final class TimeStopService {
             if (!charge.dimension.equals(dimension)) continue;
             int dx = Math.abs(pos.x() - charge.chunkPos.x());
             int dz = Math.abs(pos.z() - charge.chunkPos.z());
-            if (dx <= maxOverlapDistance && dz <= maxOverlapDistance) {
+            if (maxOverlapDistance==0 || dx <= maxOverlapDistance && dz <= maxOverlapDistance) {
                 return true;
             }
         }
@@ -391,12 +396,12 @@ public final class TimeStopService {
             }
             StandProgress progress = player.getAttachedOrCreate(StandAttachments.PROGRESS);
             if (isFrozen(player) || isAreaOverlapping(player.level(), player.chunkPosition()) || !progress.hasStand()
-                    || (!player.isCreative() && progress.stamina() < STAMINA_UPFRONT)) {
+                    || (!StandConfig.staminaFree(player) && progress.stamina() < STAMINA_UPFRONT)) {
                 setCooldown(uuid, MIN_CANCEL_COOLDOWN);
                 continue;
             }
 
-            if (!player.isCreative()) {
+            if (!StandConfig.staminaFree(player)) {
                 player.setAttached(StandAttachments.PROGRESS, progress.withStamina(progress.stamina() - STAMINA_UPFRONT));
             }
 
@@ -434,7 +439,7 @@ public final class TimeStopService {
                 continue;
             }
 
-            if (!player.isCreative()) {
+            if (!StandConfig.staminaFree(player)) {
                 StandProgress progress = player.getAttachedOrCreate(StandAttachments.PROGRESS);
                 float cost = STAMINA_PER_TICK * STOP_TICKS / stop.durationTicks;
                 if (progress.stamina() < cost) {

@@ -1,0 +1,11 @@
+{
+  "outputs": {
+    "assets/jojo/models/item/blade_hat.json": {"parent": "item/generated", "textures": {"layer0": "jojo:item/blade_hat"}},
+    "assets/jojo/items/blade_hat.json": {"model": {"type": "minecraft:model", "model": "jojo:item/blade_hat"}}
+  },
+  "reject": ["duplicate_entry", "missing_source", "unsafe_target", "missing_item_definition", "legacy_overrides"],
+  "recipes": [{
+    "source": {"type": "minecraft:crafting_shaped", "pattern": ["I"], "key": {"I": {"item": "minecraft:iron_ingot"}}, "result": {"item": "jojo:knife", "count": 4}},
+    "target": {"type": "minecraft:crafting_shaped", "pattern": ["I"], "key": {"I": "minecraft:iron_ingot"}, "result": {"id": "jojo:knife", "count": 4}}
+  }]
+}

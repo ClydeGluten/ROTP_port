@@ -26,12 +26,13 @@ public final class ActionLayoutScreen extends Screen {
     private ActionLayout draft;
     private Slot picked, hovered;
     private String status = "";
+    private final int[] rowScroll = new int[2];
     private record Slot(boolean attack, String id, int index) { }
 
     public ActionLayoutScreen(Screen parent) {
         super(Component.translatable("jojo.screen.edit_hud_layout"));
         this.parent = parent;
-        stand = ActionCatalog.standId();
+        stand = ActionLayouts.currentId();
         draft = ActionLayouts.get(stand);
     }
     @Override public boolean isPauseScreen() { return false; }
@@ -47,7 +48,7 @@ public final class ActionLayoutScreen extends Screen {
         addRow(true); addRow(false);
         addRenderableWidget(new TextureButton(windowX() - 26, windowY() + 146, 24, 24,
                 Component.translatable("jojo.screen.edit_hud_layout.reset"), 0, 208, () -> {
-                    draft = ActionCatalog.defaults(stand.equals("jojo:the_world")); picked = null; refresh();
+                    draft = ActionCatalog.defaults(stand); picked = null; refresh();
                 }));
         addRenderableWidget(new TextureButton(windowX() - 24, windowY() + 60, 22, 22,
                 Component.translatable("jojo.screen.edit_hud_layout.mc_controls"), 164, 212,
@@ -57,12 +58,13 @@ public final class ActionLayoutScreen extends Screen {
     }
     private void addRow(boolean attack) {
         List<String> row = row(attack);
-        for (int i = 0; i < row.size(); i++) {
+        int offset = rowScroll[attack ? 0 : 1];
+        for (int i = offset; i < Math.min(row.size(), offset + 10); i++) {
             Slot slot = new Slot(attack, row.get(i), i);
             addRenderableWidget(new ActionButton(slot));
         }
-        if (picked != null && picked.attack != attack && row.size() < 9) {
-            addRenderableWidget(new TextureButton(windowX() + 20 + row.size() * 18,
+        if (picked != null && picked.attack != attack && row.size() - offset < 10) {
+            addRenderableWidget(new TextureButton(windowX() + 20 + (row.size() - offset) * 18,
                     windowY() + (attack ? 10 : 36), 18, 18,
                     Component.translatable("jojo.fabric.layout.place"), 64, 220,
                     () -> place(attack, row.size())));
@@ -79,12 +81,12 @@ public final class ActionLayoutScreen extends Screen {
     }
     private Slot slotAt(double mx, double my) {
         int x = (int) mx - windowX() - 20, y = (int) my - windowY();
-        if (x < 0) return null;
+        if (x < 0 || x >= 180) return null;
         boolean attack;
         if (y >= 10 && y < 28) attack = true;
         else if (y >= 36 && y < 54) attack = false;
         else return null;
-        int i = x / 18;
+        int i = x / 18 + rowScroll[attack ? 0 : 1];
         return i < row(attack).size() ? new Slot(attack, row(attack).get(i), i) : null;
     }
     @Override public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
@@ -113,6 +115,11 @@ public final class ActionLayoutScreen extends Screen {
     }
     @Override public boolean mouseScrolled(double x, double y, double horizontal, double vertical) {
         Slot slot = slotAt(x, y);
+        if (slot != null && vertical != 0 && row(slot.attack).size() > 10) {
+            int index = slot.attack ? 0 : 1;
+            rowScroll[index] = Math.clamp(rowScroll[index] - (int)Math.signum(vertical), 0, Math.max(0,row(slot.attack).size()-10));
+            refresh(); return true;
+        }
         if (slot != null && vertical != 0) {
             draft = draft.cycleOriginal(slot.attack, vertical > 0 ? -1 : 1, id -> ActionCatalog.move(id).unlocked());
             return true;
@@ -149,7 +156,7 @@ public final class ActionLayoutScreen extends Screen {
     private class ActionButton extends AbstractWidget {
         final Slot slot;
         ActionButton(Slot slot) {
-            super(windowX() + 20 + slot.index * 18, windowY() + (slot.attack ? 10 : 36), 18, 18,
+            super(windowX() + 20 + (slot.index - rowScroll[slot.attack ? 0 : 1]) * 18, windowY() + (slot.attack ? 10 : 36), 18, 18,
                     ActionCatalog.move(slot.id).name());
             this.slot = slot;
         }

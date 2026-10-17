@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "jojo:vanilla_1_16_5/item/filled_map",
+    "layer1": "jojo:vanilla_1_16_5/item/filled_map_markings"
+  }
+}

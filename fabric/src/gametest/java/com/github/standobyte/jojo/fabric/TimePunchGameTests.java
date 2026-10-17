@@ -115,7 +115,7 @@ public final class TimePunchGameTests {
         player.setAirSupply(100);
         player.damageCooldownTime = 7;
         player.setDeltaMovement(0.2, 0.1, 0.3);
-        AbilityCooldowns.start(player, 97, 80);
+        AbilityCooldowns.start(player, RipplesFabric.id("test_unrelated_cooldown"), 80);
         int playerAge = player.tickCount;
         int standAge = stand.tickCount;
         int targetAge = target.tickCount;
@@ -134,7 +134,7 @@ public final class TimePunchGameTests {
         test.assertValueEqual(player.getRemainingFireTicks(), 80, "Implied ticks do not advance fire");
         test.assertValueEqual(player.getAirSupply(), 100, "Implied ticks do not advance breathing");
         test.assertValueEqual(player.damageCooldownTime, 7, "Implied ticks do not advance damage immunity");
-        test.assertValueEqual(AbilityCooldowns.remaining(player, 97), 80, "Implied ticks do not advance unrelated cooldowns");
+        test.assertValueEqual(AbilityCooldowns.remaining(player, RipplesFabric.id("test_unrelated_cooldown")), 80, "Implied ticks do not advance unrelated cooldowns");
         test.assertValueEqual(target.getHealth(), 100F, "Instant travel does not perform the delayed punch");
         test.assertValueEqual(stand.actionTicks(), 5, "Implied ticks do not consume the real windup");
         finish(player);

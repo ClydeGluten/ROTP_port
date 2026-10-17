@@ -1,6 +1,6 @@
 package com.github.standobyte.jojo.fabric.client;
 
-import com.github.standobyte.jojo.fabric.StarPlatinumEntity;
+import com.github.standobyte.jojo.fabric.StandManifestation;
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -18,7 +18,7 @@ public final class StandCamera {
     public static boolean update() {
         var c = Minecraft.getInstance();
         var type = c.options.getCameraType();
-        boolean eligible = c.player != null && c.level != null && c.player.isAlive() && !c.player.isSleeping()
+        boolean eligible = !com.github.standobyte.jojo.fabric.client.pillarman.PossessionClient.isPossessing() && c.player != null && c.level != null && c.player.isAlive() && !c.player.isSleeping()
                 && c.getCameraEntity() == c.player && !c.gameRenderer.mainCamera().isPanoramicMode();
         if (!eligible || type.isFirstPerson()) {
             if (eligible && owner == c.player && previousType != null && !previousType.isFirstPerson()) {
@@ -65,7 +65,7 @@ public final class StandCamera {
     public static net.minecraft.world.phys.Vec2 movement(net.minecraft.world.phys.Vec2 input) {
         if (!update()) return input;
         var c = Minecraft.getInstance();
-        var stand = StandView.ownStand(c);
+        var stand = StandView.ownManifestation(c);
         boolean aiming = aimTicks > 0 || c.options.keyAttack.isDown() || c.options.keyUse.isDown()
                 || owner.isUsingItem() || (stand != null && stand.actionPhase() != 0);
         if (aimTicks > 0) aimTicks--;
@@ -96,15 +96,15 @@ public final class StandCamera {
         owner.setXRot(pitch);
     }
 
-    public static float opacity(StarPlatinumEntity stand) {
+    public static float opacity(StandManifestation stand) {
         var client = Minecraft.getInstance();
         if (client.player == null || stand.ownerId() != client.player.getId()) return 1;
         var camera = client.gameRenderer.mainCamera();
-        if (camera.entity() == stand && client.options.getCameraType().isFirstPerson()) return 0;
+        if (camera.entity() == stand.entity() && client.options.getCameraType().isFirstPerson()) return 0;
         if (camera.entity() != client.player) return 1;
         if (client.options.getCameraType().isFirstPerson()) return 0.16F;
         // Walls can retract the camera. Fade the local Stand if it crosses the centre view.
-        var box = stand.getBoundingBox().inflate(0.3);
+        var box = stand.entity().getBoundingBox().inflate(0.3);
         var end = camera.position().add(new Vec3(camera.forwardVector()).scale(8));
         return box.contains(camera.position()) || box.clip(camera.position(), end).isPresent() ? 0.16F : 1;
     }

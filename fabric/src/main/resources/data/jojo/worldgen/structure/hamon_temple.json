@@ -1,0 +1,7 @@
+{
+  "type": "jojo:hamon_temple",
+  "biomes": "#jojo:has_structure/hamon_temple",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

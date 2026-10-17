@@ -1,4 +1,8 @@
 {
   "replace": false,
-  "values": ["jojo:stand_barrage"]
+  "values": [
+    "jojo:stand_barrage",
+    "jojo:blood_drain",
+    "jojo:space_ripper_stingy_eyes"
+  ]
 }

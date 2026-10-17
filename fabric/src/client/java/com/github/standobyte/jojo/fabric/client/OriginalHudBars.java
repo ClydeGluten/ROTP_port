@@ -1,30 +1,36 @@
 package com.github.standobyte.jojo.fabric.client;
 
 import com.github.standobyte.jojo.fabric.StandAttachments;
+import com.github.standobyte.jojo.fabric.VampireAttachments;
+import com.github.standobyte.jojo.core.VampireProgress;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import java.util.Locale;
 
-/** The Stand branches of 1.16 BarsRenderer and HorizontalBarsRenderer, at the default TOP_LEFT anchor. */
+/** The migrated power branches of 1.16 BarsRenderer and HorizontalBarsRenderer, at the default TOP_LEFT anchor. */
 final class OriginalHudBars {
     static final int BARS_WIDTH_PX = 28;
     private static final int BAR_LENGTH = 200;
     private static final int BAR_LENGTH_SHORTENED = 150;
     private final OriginalHudFade staminaFade = new OriginalHudFade(40, 10);
     private final OriginalHudFade resolveFade = new OriginalHudFade(40, 10);
+    private final OriginalHudFade bloodFade = new OriginalHudFade(40, 10);
     private float previousStamina, previousResolve, previousRecord;
     private float stamina, resolve, record;
     private int redHighlightTick;
+    private int bloodHighlightTick;
 
     void reset() {
-        staminaFade.clear(); resolveFade.clear();
+        staminaFade.clear(); resolveFade.clear(); bloodFade.clear();
         previousStamina = previousResolve = previousRecord = 0;
         stamina = resolve = record = 0;
         redHighlightTick = 0;
+        bloodHighlightTick = 0;
     }
 
-    void reveal() { staminaFade.reset(); resolveFade.reset(); }
+    void reveal() { staminaFade.reset(); resolveFade.reset(); bloodFade.reset(); }
+    void triggerBloodHighlight() { bloodHighlightTick = 10; }
 
     /** Original BarsRenderer.BarEffects.triggerRedHighlight. */
     void triggerRedHighlight(int cycles) {
@@ -36,10 +42,13 @@ final class OriginalHudBars {
         previousStamina = stamina;
         previousResolve = resolve;
         previousRecord = record;
-        staminaFade.tick(); resolveFade.tick();
+        staminaFade.tick(); resolveFade.tick(); bloodFade.tick();
         if (redHighlightTick > 0) redHighlightTick--;
+        if (bloodHighlightTick > 0) bloodHighlightTick--;
         var player = Minecraft.getInstance().player;
         if (player == null) return;
+        var vampire = player.getAttachedOrCreate(VampireAttachments.PROGRESS);
+        if (vampire.vampire() && vampire.blood() < vampire.maxBlood()) bloodFade.reset();
         var progress = player.getAttachedOrCreate(StandAttachments.PROGRESS);
         if (progress.stamina() < progress.maxStamina()) staminaFade.reset();
         if (StandAttachments.resolve(player).resolve() > 0) resolveFade.reset();
@@ -53,6 +62,21 @@ final class OriginalHudBars {
         var player = Minecraft.getInstance().player;
         var progress = player.getAttachedOrCreate(StandAttachments.PROGRESS);
         var advancement = StandAttachments.resolve(player);
+        var vampire = player.getAttachedOrCreate(VampireAttachments.PROGRESS);
+        if (vampire.vampire()) {
+            boolean fullSize = VampireClient.isMode();
+            int length = fullSize ? BAR_LENGTH : BAR_LENGTH_SHORTENED;
+            int fill = Math.clamp((int) (length * vampire.blood() / vampire.maxBlood()), 0, length);
+            if (fullSize || bloodFade.shouldRender()) {
+                renderBar(g, x + 13, y, fullSize ? 160 : 168, fullSize ? 8 : 5, length,
+                        fill, 0xFF0000, fullSize ? 1 : bloodFade.alpha(partialTick), fullSize ? 128 : 136,
+                        fullSize ? 145 : 153, 0, bloodHighlightTick, partialTick);
+                if (fullSize) OriginalHudDraw.blit(g, ActionHud.OVERLAY_LOCATION, x, y - 3, 240, 0,
+                        12, 16, 256, 0xFFFFFFFF);
+            }
+            y += fullSize ? 12 : 9;
+        }
+        if (!progress.hasStand()) return;
         stamina = progress.stamina();
         resolve = advancement.resolve();
         record = advancement.records().stream().max(Float::compare).orElse(0F);
@@ -68,7 +92,7 @@ final class OriginalHudBars {
         y += standMode ? 12 : 9;
         if (standMode) {
             float hp = advancement.healthRecord() >= 0 ? Math.min(player.getHealth(), advancement.healthRecord()) : player.getHealth();
-            float bonus = advancement.attackBoost() * (1 + (15 - Math.clamp(hp, 5, 15)) * 0.9F);
+            float bonus = com.github.standobyte.jojo.fabric.ResolveExtras.visibleBoost(player);
             if (bonus > 1) {
                 Component text = Component.literal("x" + String.format(Locale.ROOT, "%.2f", bonus));
                 // HorizontalBarsRenderer.setResolveBonusTextPos uses right-aligned text at x + 245.

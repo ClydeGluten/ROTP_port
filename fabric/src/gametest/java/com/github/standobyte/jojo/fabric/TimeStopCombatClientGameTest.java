@@ -42,7 +42,7 @@ public final class TimeStopCombatClientGameTest implements FabricClientGameTest 
         return context.computeOnClient(client -> KeyMapping.get("key.jojo.fabric." + action));
     }
 
-    private static void exercise(ClientGameTestContext context, TestServerContext server, String mode) {
+    static void exercise(ClientGameTestContext context, TestServerContext server, String mode) {
         var uuid = context.computeOnClient(client -> client.player.getUUID());
         server.runOnServer(minecraft -> {
             var player = minecraft.getPlayerList().getPlayer(uuid);
@@ -126,7 +126,9 @@ public final class TimeStopCombatClientGameTest implements FabricClientGameTest 
             context.waitFor(client -> StandView.ownStand(client) == null);
         }
 
-        // Connect a genuine client as victim; a server-side caster supplies a real regional Time Stop.
+        // Connect a genuine client as victim; a high-blood vampire supplies the original
+        // nine-second stop. This exercises the packet decoder and client countdown above
+        // the human five-second maximum, as well as frozen damage and momentum.
         context.runOnClient(client -> client.options.setCameraType(CameraType.FIRST_PERSON));
         server.runOnServer(minecraft -> {
             var victim = minecraft.getPlayerList().getPlayer(uuid);
@@ -149,11 +151,14 @@ public final class TimeStopCombatClientGameTest implements FabricClientGameTest 
             caster.connection.handleAcceptPlayerLoad(new net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket());
             caster.setGameMode(GameType.CREATIVE); caster.setNoGravity(true);
             caster.snapTo(START, 0, 0);
+            if (!VampireService.grant(caster, true)) throw new AssertionError("Could not grant vampire caster");
+            var vampire = VampireService.progress(caster);
+            caster.setAttached(VampireAttachments.PROGRESS, vampire.withBlood(vampire.maxBlood()));
             StandService.grant(caster, StandProgress.THE_WORLD);
             if (!StandService.toggle(caster) || !TimeStopService.toggle(caster)) throw new AssertionError("Could not start caster fixture");
             return id;
         });
-        context.waitFor(client -> TimeStopClient.isFrozen(client.player));
+        context.waitFor(client -> TimeStopClient.isFrozen(client.player) && TimeStopClient.ticksRemaining() > TimeStopService.STOP_TICKS);
         var frozenPosition = context.computeOnClient(client -> client.player.position());
         int frozenAge = context.computeOnClient(client -> client.player.tickCount);
         server.runOnServer(minecraft -> {

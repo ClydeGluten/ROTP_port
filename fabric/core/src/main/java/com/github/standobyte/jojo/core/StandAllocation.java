@@ -11,10 +11,7 @@ import java.util.random.RandomGenerator;
  * Allocations cycle through all playable Stands before advancing to the next generation.
  */
 public final class StandAllocation {
-    public static final List<String> DEFAULT_CATALOG = List.of(
-            StandProgress.STAR_PLATINUM,
-            StandProgress.THE_WORLD
-    );
+    public static final List<String> DEFAULT_CATALOG = StandDefinitions.naturalPool();
 
     public record StandCycle(int generation, List<String> reserved) {
         public static final StandCycle INITIAL = new StandCycle(1, List.of());

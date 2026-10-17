@@ -10,16 +10,22 @@ public final class StandView {
     private static net.minecraft.world.phys.Vec3 bodyAnchor;
     private static net.minecraft.client.player.LocalPlayer anchoredPlayer;
     public static StarPlatinumEntity ownStand(Minecraft client) {
+        return ownManifestation(client) instanceof StarPlatinumEntity stand ? stand : null;
+    }
+    public static com.github.standobyte.jojo.fabric.StandManifestation ownManifestation(Minecraft client) {
         if (client.player == null || client.level == null) return null;
         for (var entity : client.level.entitiesForRendering()) {
-            if (entity instanceof StarPlatinumEntity stand && !stand.isRemoved() && stand.ownerId() == client.player.getId()) return stand;
+            if (entity instanceof com.github.standobyte.jojo.fabric.StandManifestation stand && !stand.entity().isRemoved() && stand.ownerId() == client.player.getId()) return stand;
         }
         return null;
     }
     public static void tick(Minecraft client, boolean active) {
-        var stand = ownStand(client);
+        if (com.github.standobyte.jojo.fabric.client.pillarman.PossessionClient.isPossessing()) {
+            controlling = false; bodyAnchor = null; anchoredPlayer = null; zoom = 1; return;
+        }
+        var stand = ownManifestation(client);
         boolean control = active && stand != null && stand.manuallyControlled();
-        if (control) client.setCameraEntity(stand);
+        if (control) client.setCameraEntity(stand.entity());
         else if (controlling && client.player != null) client.setCameraEntity(client.player);
         controlling = control;
         boolean lockBody = active && stand != null && (stand.manuallyControlled() || stand.actionPhase() == StarPlatinumEntity.PHASE_TIME_CHARGE);
@@ -32,7 +38,8 @@ public final class StandView {
         if (client.player == null) zoom = 1;
     }
     public static boolean bodyLocked() {
-        var stand = ownStand(Minecraft.getInstance());
+        if (com.github.standobyte.jojo.fabric.client.pillarman.PossessionClient.isPossessing()) return false;
+        var stand = ownManifestation(Minecraft.getInstance());
         return stand != null && (stand.manuallyControlled() || stand.actionPhase() == StarPlatinumEntity.PHASE_TIME_CHARGE);
     }
     public static float zoom() { return zoom; }

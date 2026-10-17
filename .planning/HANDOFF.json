@@ -1,0 +1,105 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-10-17T22:42:09.968770+00:00",
+  "phase": "05",
+  "phase_name": "Remaining Content and Compatibility",
+  "phase_dir": ".planning/phases/05-remaining-content-and-compatibility",
+  "plan": 41,
+  "task": 2,
+  "total_tasks": 3,
+  "status": "delegated",
+  "completed_tasks": [
+    {
+      "name": "Draft18 scoped delivery",
+      "status": "done"
+    },
+    {
+      "name": "Workspace19 main/client/GameTest compilation",
+      "status": "done"
+    },
+    {
+      "name": "MR and shared tracking runtime acceptance",
+      "status": "in_progress"
+    }
+  ],
+  "remaining_tasks": [
+    {
+      "name": "MR runtime/client integration",
+      "status": "in_progress"
+    },
+    {
+      "name": "CD44\u201346, GE48\u201350, President51\u201352",
+      "status": "in_progress"
+    },
+    {
+      "name": "Remaining active original-mod roadmap",
+      "status": "not_complete"
+    }
+  ],
+  "blockers": [],
+  "human_actions_pending": [],
+  "async_jobs": [
+    {
+      "manifest": ".planning/async-jobs/antigravity-rest-port.json",
+      "job_id": "antigravity-rest-port",
+      "backend": "AntigravityCLI",
+      "status": "preparing"
+    }
+  ],
+  "uncommitted_files": [
+    "M  .planning/PROJECT.md",
+    "M  .planning/REQUIREMENTS.md",
+    "MM .planning/ROADMAP.md",
+    "MM .planning/STATE.md",
+    "M  .planning/config.json",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-07-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-07-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-08-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-08-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-09-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-09-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-10-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-10-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-11-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-11-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-12-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-12-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-13-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-13-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-14-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-14-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-15-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-15-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-16-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-16-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-17-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-17-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-18-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-18-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-19-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-19-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-20-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-20-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-21-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-21-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-22-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-22-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-23-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-23-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-24-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-24-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-25-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-25-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-26-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-27-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-28-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-28-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-29-PLAN.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-29-SUMMARY.md",
+    "A  .planning/phases/05-remaining-content-and-compatibility/05-30-PLAN.md"
+  ],
+  "uncommitted_files_elided": 878,
+  "uncommitted_files_measured_at": "2026-10-17T22:42:09.968770+00:00",
+  "next_action": "Inspect Antigravity job status and phase .continue-here.md before resuming; no parallel Codex implementation.",
+  "context_notes": "User authorized Antigravity-only work for available quota with five-hour upper bound, then checkpoint and stop. Last verified artifact18; workspace19 compilation only."
+}
